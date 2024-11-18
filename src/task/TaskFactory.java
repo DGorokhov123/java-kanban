@@ -1,3 +1,5 @@
+package task;
+
 /**
  * Далее в таких комментах - цитаты из ТЗ
  */
@@ -5,7 +7,7 @@ public class TaskFactory {
     /**
      * В трекере у каждого типа задач есть идентификатор. Это целое число, уникальное для всех типов задач.
      * По нему находят, обновляют, удаляют задачи. При создании задачи менеджер присваивает ей новый идентификатор.
-     * Для генерации идентификаторов можно использовать числовое поле-счётчик внутри класса TaskManager,
+     * Для генерации идентификаторов можно использовать числовое поле-счётчик внутри класса manager.TaskManager,
      * увеличивая его на 1, когда нужно получить новое значение.
      */
     private int taskCounter = 0;
@@ -15,7 +17,7 @@ public class TaskFactory {
     }
 
     /*
-    New Task Generator
+    New task.Task Generator
      */
     public Task newTask() {
         return newTask("New task", "");
@@ -32,7 +34,7 @@ public class TaskFactory {
 
 
     /*
-    New Epic Generator
+    New task.Epic Generator
      */
     public Epic newEpic() {
         return newEpic("New epic", "");
@@ -49,7 +51,7 @@ public class TaskFactory {
 
 
     /*
-    New Subtask Generator
+    New task.Subtask Generator
      */
     public Subtask newSubtask() {
         return newSubtask("New subtask", "");

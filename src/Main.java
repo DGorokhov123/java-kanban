@@ -1,15 +1,17 @@
+import manager.*;
+import task.*;
+
 /**
  * Далее в таких комментах - цитаты из ТЗ
  */
 public class Main {
 
+    /**
+     * Вы можете добавить консольный вывод для самопроверки в класcе Main, но на работу методов он влиять не должен.
+     */
     public static void main(String[] args) {
         TaskFactory tFac = new TaskFactory();
-        TaskManager tMan = new TaskManager(tFac);
-
-        /**
-         * Вы можете добавить консольный вывод для самопроверки в класcе Main, но на работу методов он влиять не должен.
-         */
+        TaskManager tMan = new TaskManager();
         Epic e;
         Subtask s;
         Task t;
@@ -76,16 +78,15 @@ public class Main {
         tMan.getTaskById(allBadId).setStatus(TaskStatus.DONE);
 
         // get epic by id and change subtask status
-        if (tMan.getTaskById(russiaId) instanceof Epic epic)  epic.getSubtasks().get(trampId).setStatus(TaskStatus.DONE);
+        tMan.getSubTasks(russiaId).get(1).setStatus(TaskStatus.DONE);
 
         // remove epic, task, subtask
         tMan.removeTaskById(epicIdToRemove);
         tMan.removeTaskById(taskToDelete);
         tMan.removeTaskById(russiaSubtaskToRemove);
 
-        System.out.println("----------------------------ВСЕ ТАСКИ С ПОДТАСКАМИ---------------------------");
-        // get task list to show
-        for (Task task : tMan.getTasks().values())  System.out.println(task);
+        System.out.println("----------------------------ВСЕ ТАСКИ С ПОДТАСКАМИ - getTasks() ---------------------------");
+        for (Task task : tMan.getTasks())  System.out.println(task);
 
         System.out.println("----------------------------КОНКРЕТНЫЙ ТАСК ПО ID---------------------------");
         System.out.println(tMan.getTaskById(taskToShow));
@@ -99,7 +100,11 @@ public class Main {
         System.out.println(tMan.getTaskById(8745));
         System.out.println(tMan.getTaskById(9852));
 
+        System.out.println("----------------------------ВСЕ ЭПИКИ - getEpics() ---------------------------");
+        for (Epic epic : tMan.getEpics()) System.out.println(epic);
 
+        System.out.println("--------------------ВСЕ САБТАСКИ (Россия) - getSubTasks(int epicId) ------------------------");
+        for (Subtask subtask : tMan.getSubTasks(russiaId)) System.out.println(subtask);
 
 
     }

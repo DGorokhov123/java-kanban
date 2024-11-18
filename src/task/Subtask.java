@@ -1,12 +1,14 @@
+package task;
+
 /**
  * Далее в таких комментах - цитаты из ТЗ
  * Иногда для выполнения какой-нибудь масштабной задачи её лучше разбить на подзадачи (англ. subtask).
- * Для эталонного решения мы выбрали создание публичного не абстрактного класса Task,
- * который представляет отдельно стоящую задачу. Его данные наследуют подклассы Subtask и Epic.
- * Для подклассов Subtask и Epic наследуем сразу имплементацию, поскольку нам понадобится такое расширение
+ * Для эталонного решения мы выбрали создание публичного не абстрактного класса task.Task,
+ * который представляет отдельно стоящую задачу. Его данные наследуют подклассы task.Subtask и task.Epic.
+ * Для подклассов task.Subtask и task.Epic наследуем сразу имплементацию, поскольку нам понадобится такое расширение
  * функциональности, которое совместимо с базовым классом и не отличается от него по поведению.
  */
-public class Subtask extends Task{
+public class Subtask extends Task {
     /**
      * Для каждой подзадачи известно, в рамках какого эпика она выполняется.
      */
@@ -20,7 +22,8 @@ public class Subtask extends Task{
         return epic;
     }
 
-    public void setEpic(Epic epic) {
+    // package-private method
+    void setEpic(Epic epic) {
         this.epic = epic;
     }
 
@@ -32,7 +35,7 @@ public class Subtask extends Task{
     @Override
     public void setStatus(TaskStatus status) {
         this.status = status;
-        if (epic != null)  epic.calculateStatus();
+        if (epic != null)  epic.setStatus(null);
     }
 
     /**
