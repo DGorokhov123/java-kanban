@@ -43,8 +43,6 @@ public class Main {
         e.addSubtask(tFac.newSubtask("Рожать больше детей", "Достичь показателя 3 ребенка на 1 женщину"));
         tMan.addTask(e);
 
-        //tMan.removeAllTasks();     // you can remove all the tasks above
-
         tMan.addTask(tFac.newTask("Купить машину", "Выбрать модель и заказать в автосалоне"));
 
         t = tFac.newTask("Бессмысленное занятие", "Удалим его поскорее");
@@ -105,6 +103,21 @@ public class Main {
 
         System.out.println("--------------------ВСЕ САБТАСКИ (Россия) - getSubTasks(int epicId) ------------------------");
         for (Subtask subtask : tMan.getSubTasks(russiaId)) System.out.println(subtask);
+
+        System.out.println("---------------------ВСЕ ТАСКИ С ПОДТАСКАМИ - после removeAllTasks() ----------------------");
+        tMan.removeAllTasks();
+        if (tMan.getTasks() != null) for (Task task : tMan.getTasks()) System.out.println(task);
+        else System.out.println("Пустой список");
+
+        System.out.println("---------------------ВСЕ ТАСКИ С ПОДТАСКАМИ - после removeAllSubtasks() ----------------------");
+        tMan.removeAllSubtasks();
+        if (tMan.getTasks() != null) for (Task task : tMan.getTasks()) System.out.println(task);
+        else System.out.println("Пустой список");
+
+        System.out.println("---------------------ВСЕ ТАСКИ С ПОДТАСКАМИ - после removeAllEpics() ----------------------");
+        tMan.removeAllEpics();
+        if (tMan.getTasks() != null) for (Task task : tMan.getTasks()) System.out.println(task);
+        else System.out.println("Пустой список");
 
 
     }

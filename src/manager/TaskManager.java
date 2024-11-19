@@ -4,6 +4,7 @@ import task.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Далее в таких комментах - цитаты из ТЗ
@@ -116,14 +117,55 @@ public class TaskManager {
     /**
      * Методы для каждого из типа задач(Задача/Эпик/Подзадача):
      *  b. Удаление всех задач.
-     *  UPDATE 1
-     *  используйте метод clear из Map. может загуглить разницу между clear и new для мамы
-     *  И каунтер обнулять тоже не надо
+     *  - Удаляет все Task
      */
-    // погуглил и даже гпт спросил. большинство рекомендует клир, хотя аргументы слабые
+    // Q: такие уж слабые?
+    // за клир: не требует дополнительной памяти, гарбидж коллектору легче вычищать много мелких объектов,
+    //          сохраняются ссылки на объект, сохраняются настройки если есть
+    // за нью:  сложность O(1) против O(n) у клира, очищает сразу много памяти если таблица большая
     public void removeAllTasks() {
-        tasks.clear();
+        Iterator<Task> taskIterator = tasks.values().iterator();
+        while (taskIterator.hasNext()) {
+            Task task = taskIterator.next();
+            if (task instanceof Epic) continue;
+            if (task instanceof Subtask) continue;
+            taskIterator.remove();
+        }
     }
+
+    /**
+     * Методы для каждого из типа задач(Задача/Эпик/Подзадача):
+     *  b. Удаление всех задач.
+     *  - Удаляет сабтаски и сабтаски внутри эпиков
+     */
+    public void removeAllSubtasks() {
+        Iterator<Task> taskIterator = tasks.values().iterator();
+        while (taskIterator.hasNext()) {
+            Task task = taskIterator.next();
+            if (task instanceof Subtask subtask) {
+                if (subtask.getEpic() != null) subtask.getEpic().removeSubtaskById(subtask.getId());
+                taskIterator.remove();
+            }
+        }
+    }
+
+    /**
+     * Методы для каждого из типа задач(Задача/Эпик/Подзадача):
+     *  b. Удаление всех задач.
+     *  - Удаляет все эпики и следовательно все их сабтаски
+     */
+    public void removeAllEpics() {
+        Iterator<Task> taskIterator = tasks.values().iterator();
+        while (taskIterator.hasNext()) {
+            Task task = taskIterator.next();
+            if (task instanceof Epic) {
+                taskIterator.remove();
+            } else if (task instanceof Subtask subtask) {
+                if (subtask.getEpic() != null)  taskIterator.remove();
+            }
+        }
+    }
+
 
     /**
      * Методы для каждого из типа задач(Задача/Эпик/Подзадача):
