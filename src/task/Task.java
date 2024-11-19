@@ -66,6 +66,14 @@ public class Task {
         this.status = status;
     }
 
+    public void update(Task task) {
+        if (task == null)  return;
+        if (task.getId() != id)  return;
+        this.title = task.getTitle();
+        this.description = task.getDescription();
+        this.status = task.getStatus();
+    }
+
     /**
      * Распечатайте списки эпиков, задач и подзадач через System.out.println(..).
      */

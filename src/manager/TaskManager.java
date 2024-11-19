@@ -85,10 +85,11 @@ public class TaskManager {
      */
     public void addTask(Task task) {
         if (task == null)  return;
+        if (tasks.containsKey(task.getId()))  return;
         if (task instanceof Epic epic) {
             tasks.put(task.getId(), task);
             for (Subtask subtask : epic.getSubtasks().values()) {
-                tasks.put(subtask.getId(), subtask);
+                if (!tasks.containsKey(subtask.getId()))  tasks.put(subtask.getId(), subtask);
             }
         } else if (task instanceof Subtask subtask) {
             if (subtask.getEpic() == null)  return;
@@ -109,9 +110,14 @@ public class TaskManager {
      *  UPDATE 1
      *  тут бы еще проверить есть ли такой id в map, и обновлять если есть.
      */
+    // тут на вебинаре внезапно выяснилось, что фронт будет присылать обновления в виде совершенно нового объекта с
+    // таким же id и если его просто класть в мап с помощью put, то будут рассогласования со ссылками в эпиках
+    // и сабтасках. тут можно было бы циклами обойти всю структуру и поменять ссылки, но мне подумалось что
+    // проще сделать метод копирования данных в самом таске, а структуру ссылок не трогать вообще.
     public void updateTask(Task task) {
         if (task == null)  return;
-        if (tasks.containsKey(task.getId()))  tasks.put(task.getId(), task);
+        if (!tasks.containsKey(task.getId()))  return;
+        tasks.get(task.getId()).update(task);
     }
 
     /**

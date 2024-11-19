@@ -98,6 +98,9 @@ public class Main {
         System.out.println(tMan.getTaskById(8745));
         System.out.println(tMan.getTaskById(9852));
 
+        // update subtask (about Trump)
+        tMan.updateTask(new Subtask(trampId, "Импичмент Трампу", "Оказался неоч"));
+
         System.out.println("----------------------------ВСЕ ЭПИКИ - getEpics() ---------------------------");
         for (Epic epic : tMan.getEpics()) System.out.println(epic);
 
