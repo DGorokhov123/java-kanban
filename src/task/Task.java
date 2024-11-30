@@ -1,41 +1,41 @@
 package task;
-
 import java.util.Objects;
 
 /**
- * Далее в таких комментах - цитаты из ТЗ
- * Простейший кирпичик трекера — задача (англ. task)
- * Для эталонного решения мы выбрали создание публичного не абстрактного класса task.Task,
- * который представляет отдельно стоящую задачу.
- * В нашем задании класс task.Task можно использовать сам по себе, не делая его абстрактным.
+ * Simple task class. Standalone ungrouped tasks without subtasks.
  */
 public class Task {
-    /**
-     * Уникальный идентификационный номер задачи, по которому её можно будет найти.
-     */
+
     protected final int id;
-    /**
-     * Название, кратко описывающее суть задачи (например, «Переезд»).
-     */
     protected String title;
-    /**
-     * Описание, в котором раскрываются детали.
-     */
     protected String description;
-    /**
-     * Статус, отображающий её прогресс. Вы будете выделять следующие этапы жизни задачи, используя enum:
-     * 1. NEW — задача только создана, но к её выполнению ещё не приступили.
-     * 2. IN_PROGRESS — над задачей ведётся работа.
-     * 3. DONE — задача выполнена.
-     */
     protected TaskStatus status;
 
-
-    public Task(int id, String title, String description) {
+    /**
+     * Updating constructor makes object for update method.
+     * @param id
+     * @param title
+     * @param description
+     * @param status
+     */
+    public Task(int id, String title, String description, TaskStatus status) {
         this.id = id;
         this.title = title;
         this.description = description;
-        this.status = TaskStatus.NEW;
+        this.status = status;
+    }
+
+    /**
+     * Adding constructor makes object for add method.
+     * @param title
+     * @param description
+     * @param status
+     */
+    public Task(String title, String description, TaskStatus status) {
+        this.id = 0;
+        this.title = title;
+        this.description = description;
+        this.status = status;
     }
 
     public int getId() {
@@ -66,16 +66,22 @@ public class Task {
         this.status = status;
     }
 
-    public void update(Task task) {
-        if (task == null)  return;
-        if (task.getId() != id)  return;
-        this.title = task.getTitle();
-        this.description = task.getDescription();
-        this.status = task.getStatus();
+    /**
+     * Updates this task using data from received task.
+     * @param task new instance of Task object, containing new data
+     * @return {@code 0} Normal termination, {@code -N} Error code.
+     */
+    public int update(Task task) {
+        if (task == null)  return -1;
+        if (task.getClass() != this.getClass())  return -2;
+        setTitle(task.getTitle());
+        setDescription(task.getDescription());
+        setStatus(task.getStatus());
+        return 0;
     }
 
     /**
-     * Распечатайте списки эпиков, задач и подзадач через System.out.println(..).
+     * Represents task as string to print. Usable with System.out.println()
      */
     @Override
     public String toString() {
@@ -83,16 +89,19 @@ public class Task {
     }
 
     /**
-     * Также советуем применить знания о методах equals() и hashCode(), чтобы реализовать идентификацию задачи по её id.
-     * При этом две задачи с одинаковым id должны выглядеть для менеджера как одна и та же.
+     * Compares two tasks. They should be equal only if they have the same ID.
      */
     @Override
     public boolean equals(Object o) {
+        if (o == this) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
         return id == task.id;
     }
 
+    /**
+     * Two tasks are equal if they have the same ID. Hashcode depends only on ID value.
+     */
     @Override
     public int hashCode() {
         return Objects.hashCode(id);

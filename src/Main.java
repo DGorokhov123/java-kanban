@@ -1,127 +1,103 @@
+import com.google.gson.Gson;
 import manager.*;
 import task.*;
 
-/**
- * Далее в таких комментах - цитаты из ТЗ
- */
 public class Main {
 
-    /**
-     * Вы можете добавить консольный вывод для самопроверки в класcе Main, но на работу методов он влиять не должен.
-     */
     public static void main(String[] args) {
-        TaskFactory tFac = new TaskFactory();
-        TaskManager tMan = new TaskManager();
-        Epic e;
-        Subtask s;
-        Task t;
+        TaskFactory taskFactory = Managers.getDefaultFactory();
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        TaskManager tMan = Managers.getDefault(taskFactory, historyManager);
 
-        // generate some task data
-        t = tFac.newTask();
-        t.setTitle("Переезд");
-        t.setDescription("Собрать коробки, Упаковать кошку, Сказать слова прощания");
-        t.setStatus(TaskStatus.DONE);
-        int taskToShow = t.getId();
-        tMan.addTask(t);
+        optionalDemo(tMan);
+    }
 
-        e = tFac.newEpic("Наладить жизнь в России");
-        System.out.println("-----------------------ПУСТОЙ ЭПИК-------------------------");
-        System.out.println(e);
-        int russiaId = e.getId();
-        s = tFac.newSubtask("Запретить все плохое", "Составить реестр плохого, принять законы");
-        int allBadId = s.getId();
-        System.out.println("-----------------------ПУСТОЙ САБТАСК-------------------------");
-        System.out.println(s);
-        int russiaSubtaskToShow = s.getId();
-        e.addSubtask(s);
-        s = tFac.newSubtask("Избрать Трампа", "Сделать Дони президентом США");
-        int trampId = s.getId();
-        e.addSubtask(s);
-        s = tFac.newSubtask("Снизить налоги", "и упразднить Роскомнадзор");
-        int russiaSubtaskToRemove = s.getId();
-        e.addSubtask(s);
-        e.addSubtask(tFac.newSubtask("Рожать больше детей", "Достичь показателя 3 ребенка на 1 женщину"));
-        tMan.addTask(e);
 
-        tMan.addTask(tFac.newTask("Купить машину", "Выбрать модель и заказать в автосалоне"));
+    private static void optionalDemo(TaskManager tMan) {
+        Gson gson = new Gson();
 
-        t = tFac.newTask("Бессмысленное занятие", "Удалим его поскорее");
-        int taskToDelete = t.getId();
-        tMan.addTask(t);
+        // Simple task #1 - from json
+        String json1 = "{\"id\":0,\"title\":\"Десериализация\",\"description\":\"этот таск добавлен из json\",\"status\":\"IN_PROGRESS\"}";
+        tMan.add(gson.fromJson(json1, Task.class));
 
-        e = tFac.newEpic("Стать крутым прогером");
-        s = tFac.newSubtask("Закончить курсы", "например Яндекс Практикум");
-        s.setStatus(TaskStatus.IN_PROGRESS);
-        e.addSubtask(s);
-        e.addSubtask(s);
-        e.addSubtask(s);
-        e.addSubtask(tFac.newSubtask("Стать джуном", "найти любую работу"));
-        e.addSubtask(tFac.newSubtask("Стать мидлом", "найти работу за деньги"));
-        e.addSubtask(tFac.newSubtask("Стать сеньором", "и уехать на Бали"));
-        tMan.addTask(e);
+        // Simple task #2 - add + update
+        int t2 = tMan.add(new Task("Старый тайтл", "метод update не сработал!", TaskStatus.NEW));
+        tMan.update(new Task(t2, "Новый тайтл", "метод update успешно отработал", TaskStatus.IN_PROGRESS));
+        tMan.update(new Task(t2, "Новый тайтл", "метод update успешно отработал", TaskStatus.DONE));
 
-        e = tFac.newEpic("Этот эпик мы будем удалять");
-        int epicIdToRemove = e.getId();
-        e.addSubtask(tFac.newSubtask("Неважно", "что мы тут напишем"));
-        e.addSubtask(tFac.newSubtask("все равно это", "будет удалено"));
-        tMan.addTask(e);
+        // Simple task #3 - add + delete
+        int t3 = tMan.add(new Task("Удаление таска", "это должно быть удалено", TaskStatus.NEW));
+        tMan.removeById(t3);
 
-        // add and remove epic without subtasks
-        e = tFac.newEpic("Это эпик без сабтасков");
-        int epicWithoutSubtasks = e.getId();
-        tMan.addTask(e);
-        tMan.removeTaskById(epicWithoutSubtasks);
+        // Epic #1 - from json
+        int e1 = tMan.add(gson.fromJson("{\"subtasks\":{},\"id\":0," +
+                "\"title\":\"Наладить жизнь в России\",\"description\":\"\",\"status\":\"NEW\"}", Epic.class));
+        tMan.add(gson.fromJson("{\"epicId\":" + e1 + ",\"id\":0,\"title\":\"Запретить все плохое\"," +
+                "\"description\":\"Составить реестр плохого, принять законы\",\"status\":\"DONE\"}", Subtask.class));
+        tMan.add(gson.fromJson("{\"epicId\":" + e1 + ",\"id\":0,\"title\":\"Избрать Трампа\"," +
+                "\"description\":\"Сделать Дони президентом США\",\"status\":\"DONE\"}", Subtask.class));
+        tMan.add(gson.fromJson("{\"epicId\":" + e1 + ",\"id\":0,\"title\":\"Укрепить рубль\"," +
+                "\"description\":\"и уменьшить ключевую ставку\",\"status\":\"NEW\"}", Subtask.class));
 
-        // change subtask status
-        tMan.getTaskById(allBadId).setStatus(TaskStatus.DONE);
+        // Epic #2 - add + delete
+        int e2 = tMan.add(new Epic("Проверить удаление эпиков", ""));
+        tMan.add(new Subtask("а также", "всех его сабтасков", TaskStatus.NEW, e2));
+        tMan.removeById(e2);
 
-        // get epic by id and change subtask status
-        tMan.getSubTasks(russiaId).get(1).setStatus(TaskStatus.DONE);
+        // Epic #3 - add + update + delete subtask
+        int e3 = tMan.add(new Epic("Название эпика надо изменить", ""));
+        int e3s1 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3));
+        int e3s2 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3));
+        int e3s3 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3));
+        int e3s4 = tMan.add(new Subtask("а вот этот сабтаск", "нужно удалить", TaskStatus.NEW, e3));
+        int e3s5 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3));
+        tMan.update(new Epic(e3, "Стать крутым прогером", "план надежный как швейцарские часы"));
+        tMan.update(new Subtask(e3s1, "Закончить курсы", "например Яндекс Практикум", TaskStatus.IN_PROGRESS));
+        tMan.update(new Subtask(e3s2, "Стать джуном", "найти любую работу", TaskStatus.NEW));
+        tMan.update(new Subtask(e3s3, "Стать мидлом", "найти работу за деньги", TaskStatus.NEW));
+        tMan.removeById(e3s4);
+        tMan.update(gson.fromJson("{\"epicId\":0,\"id\":" + e3s5 + ",\"title\":\"Стать сеньором\"," +
+                "\"description\":\"и уехать на Бали\",\"status\":\"NEW\"}", Subtask.class));
 
-        // remove epic, task, subtask
-        tMan.removeTaskById(epicIdToRemove);
-        tMan.removeTaskById(taskToDelete);
-        tMan.removeTaskById(russiaSubtaskToRemove);
 
-        System.out.println("----------------------------ВСЕ ТАСКИ С ПОДТАСКАМИ - getTasks() ---------------------------");
+        // Show information
+        System.out.println("----------------------------ВСЕ ПРОСТЫЕ ТАСКИ - getTasks() ---------------------------");
         for (Task task : tMan.getTasks())  System.out.println(task);
 
-        System.out.println("----------------------------КОНКРЕТНЫЙ ТАСК ПО ID---------------------------");
-        System.out.println(tMan.getTaskById(taskToShow));
-        System.out.println("----------------------------КОНКРЕТНЫЙ САБТАСК ПО ID---------------------------");
-        System.out.println(tMan.getTaskById(russiaSubtaskToShow));
-        System.out.println("----------------------------КОНКРЕТНЫЙ ЭПИК ПО ID---------------------------");
-        System.out.println(tMan.getTaskById(russiaId));
+        System.out.println("----------------------------ВСЕ ЭПИКИ С САБТАСКАМИ - getEpics() + getSubTasks()---------");
+        for (Epic epic : tMan.getEpics()) {
+            System.out.println(epic);
+            for (Subtask subtask : tMan.getSubTasks(epic.getId()))  System.out.println("\t" + subtask.toString());
+        }
 
         System.out.println("----------------------------НЕСУЩЕСТВУЮЩИЕ ТАСК, САБ, ЭПИК---------------------------");
-        System.out.println(tMan.getTaskById(4568));
-        System.out.println(tMan.getTaskById(8745));
+        System.out.print(tMan.getTaskById(4568));
+        System.out.print(tMan.getTaskById(8745));
         System.out.println(tMan.getTaskById(9852));
 
-        // update subtask (about Trump)
-        tMan.updateTask(new Subtask(trampId, "Импичмент Трампу", "Оказался неоч"));
+        System.out.println("---------------------ИСТОРИЯ ПРОСМОТРОВ - getHistory() ----------------------");
+        for (int i = 0; i < 20; i++) tMan.getTaskById(i);
+        tMan.getTaskById(15);
+        tMan.getTaskById(15);
+        int historyCounter = 1;
+        if (tMan.getHistory() != null) for (Task task : tMan.getHistory()) {
+            System.out.println(historyCounter + ". " + task.toString());
+            historyCounter++;
+        } else System.out.println("Пустой список");
 
-        System.out.println("----------------------------ВСЕ ЭПИКИ - getEpics() ---------------------------");
-        for (Epic epic : tMan.getEpics()) System.out.println(epic);
-
-        System.out.println("--------------------ВСЕ САБТАСКИ (Россия) - getSubTasks(int epicId) ------------------------");
-        for (Subtask subtask : tMan.getSubTasks(russiaId)) System.out.println(subtask);
-
-        System.out.println("---------------------ВСЕ ТАСКИ С ПОДТАСКАМИ - после removeAllTasks() ----------------------");
+        System.out.println("---------------------ВСЕ ПРОСТЫЕ ТАСКИ - после removeAllTasks() ----------------------");
         tMan.removeAllTasks();
         if (tMan.getTasks() != null) for (Task task : tMan.getTasks()) System.out.println(task);
         else System.out.println("Пустой список");
 
-        System.out.println("---------------------ВСЕ ТАСКИ С ПОДТАСКАМИ - после removeAllSubtasks() ----------------------");
+        System.out.println("---------------------ВСЕ ЭПИКИ - после removeAllSubtasks() ----------------------");
         tMan.removeAllSubtasks();
-        if (tMan.getTasks() != null) for (Task task : tMan.getTasks()) System.out.println(task);
+        if (tMan.getEpics() != null) for (Epic epic : tMan.getEpics())  System.out.println(epic);
         else System.out.println("Пустой список");
 
-        System.out.println("---------------------ВСЕ ТАСКИ С ПОДТАСКАМИ - после removeAllEpics() ----------------------");
+        System.out.println("---------------------ВСЕ ЭПИКИ - после removeAllEpics() ----------------------");
         tMan.removeAllEpics();
-        if (tMan.getTasks() != null) for (Task task : tMan.getTasks()) System.out.println(task);
+        if (tMan.getEpics() != null) for (Epic epic : tMan.getEpics())  System.out.println(epic);
         else System.out.println("Пустой список");
-
-
     }
 }

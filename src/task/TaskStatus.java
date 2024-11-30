@@ -1,11 +1,10 @@
 package task;
 
 /**
- * Далее в таких комментах - цитаты из ТЗ
- * Статус, отображающий её прогресс. Вы будете выделять следующие этапы жизни задачи, используя enum:
- * 1. NEW — задача только создана, но к её выполнению ещё не приступили.
- * 2. IN_PROGRESS — над задачей ведётся работа.
- * 3. DONE — задача выполнена.
+ * Status of the task:
+ * <br>{@code NEW} — the task has just been created.
+ * <br>{@code IN_PROGRESS} — the work is being done.
+ * <br>{@code DONE} — the task is done.
  */
 public enum TaskStatus {
     NEW,

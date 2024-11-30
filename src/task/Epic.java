@@ -1,50 +1,54 @@
 package task;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Далее в таких комментах - цитаты из ТЗ
- * Большая задача, которая делится на подзадачи, называется эпиком (англ. epic).
- * Для эталонного решения мы выбрали создание публичного не абстрактного класса task.Task,
- * который представляет отдельно стоящую задачу. Его данные наследуют подклассы task.Subtask и task.Epic.
- * Для подклассов task.Subtask и task.Epic наследуем сразу имплементацию, поскольку нам понадобится такое расширение
- * функциональности, которое совместимо с базовым классом и не отличается от него по поведению.
+ * Epic task class. Extends Task class. Has subtasks of Subtask type.
  */
 public class Epic extends Task {
+
+    private final LinkedHashMap<Integer, Subtask> subtasks = new LinkedHashMap<>();
+
     /**
-     * Каждый эпик знает, какие подзадачи в него входят.
+     * Updating constructor makes object for update method.
+     * @param id
+     * @param title
+     * @param description
      */
-    private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
-
     public Epic(int id, String title, String description) {
-        super(id, title, description);
+        super(id, title, description, TaskStatus.NEW);
     }
 
-    public void addSubtask(Subtask task) {
-        if (task == null) return;
-        subtasks.put(task.getId(), task);
-        task.setEpic(this);
-        calculateStatus();
+    /**
+     * Adding constructor makes object for add method.
+     * @param title
+     * @param description
+     */
+    public Epic(String title, String description) {
+        super(title, description, TaskStatus.NEW);
     }
 
-    public HashMap<Integer, Subtask> getSubtasks() {
+    /**
+     * Return HashMap of all the subtasks of this Epic. Key field is ID.
+     * @return {@code Map<Integer, Subtask>}
+     */
+    public Map<Integer, Subtask> getSubtasks() {
         return subtasks;
     }
 
     /**
-     * если у эпика нет подзадач или все они имеют статус NEW, то статус должен быть NEW.
-     * если все подзадачи имеют статус DONE, то и эпик считается завершённым — со статусом DONE.
-     * во всех остальных случаях статус должен быть IN_PROGRESS.
-     * Завершение всех подзадач эпика считается завершением эпика.
-     * UPDATE 1
-     * сделайте этот метод private, думаю он вам нигде не нужен кроме этого класса
+     * Sets status of this Epic by calculation based on subtasks statuses.
      */
-    // сделал private, хотя метод используется в сабтаске. выкрутился с помощью setStatus
+    @Override
+    public void setStatus(TaskStatus status) {
+        calculateStatus();
+    }
+
+    /**
+     * Calculates status of this Epic basing on subtasks statuses.
+     */
     private void calculateStatus() {
-        if (subtasks.isEmpty()) {
-            status = TaskStatus.NEW;
-            return;
-        }
         boolean isNew = true;
         boolean isDone = true;
         for (Subtask subtask : subtasks.values()) {
@@ -57,34 +61,41 @@ public class Epic extends Task {
     }
 
     /**
-     * Из описания задачи видно, что эпик не управляет своим статусом самостоятельно. Это значит:
-     * 1) Пользователь не должен иметь возможности поменять статус эпика самостоятельно.
-     * UPDATE 1
-     * return тут не обязателен, может метод оставить пустым
+     * Makes references between this Epic and its Subtask
+     * @param subtask Subtask object to link
+     * @return {@code 0} Normal termination, {@code -N} Error code.
      */
-    // этот метод теперь используется для расчета статуса эпика при изменении статуса сабтаска
-    // не знаю хорошо ли так делать, может лучше сделать calculateStatus() package-private
-    @Override
-    public void setStatus(TaskStatus status) {
+    public int linkSubtask(Subtask subtask) {
+        if (subtask == null) return -1;
+        if (subtasks.containsKey(subtask.getId()))  return -2;
+        subtasks.put(subtask.getId(), subtask);
+        subtask.setEpic(this);
         calculateStatus();
-    }
-
-    public void removeSubtaskById(int remId) {
-        subtasks.get(remId).setEpic(null);
-        subtasks.remove(remId);
-        calculateStatus();
+        return 0;
     }
 
     /**
-     * Распечатайте списки эпиков, задач и подзадач через System.out.println(..).
+     * Removes references between this Epic and Subtask with specified ID.
+     * @param id ID of existing extended Task type object to unlink.
+     * @return {@code 0} Normal termination, {@code -N} Error code.
+     */
+    public int unlinkSubtask(int id) {
+        Subtask subtask = subtasks.get(id);
+        if (subtask == null) return -1;
+        subtask.setEpic(null);
+        subtasks.remove(id);
+        calculateStatus();
+        return 0;
+    }
+
+    /**
+     * Represents task as string to print. Usable with System.out.println()
      */
     @Override
     public String toString() {
         StringBuilder res = new StringBuilder("Epic #" + id + "\t[" + status + "]\t" + title);
         if (!description.isEmpty())  res.append(" (").append(description).append(")");
-        for (Subtask subtask : subtasks.values()) {
-            res.append("\n").append(subtask.toString());
-        }
         return res.toString();
     }
+
 }
