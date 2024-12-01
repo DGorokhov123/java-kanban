@@ -11,14 +11,15 @@ import java.util.List;
 public class InMemoryTaskManager implements TaskManager {
 
     private final LinkedHashMap<Integer, Task> tasks = new LinkedHashMap<>();
-    private final TaskFactory tFac;
-    private final HistoryManager hMan;
+    // так не пойдем, ставьте понятные название переменных: taskFactory, historyManager
+    private final TaskFactory taskFactory;
+    private final HistoryManager historyManager;
 
     public InMemoryTaskManager(TaskFactory taskFactory, HistoryManager historyManager) {
         if (taskFactory == null) throw new IllegalArgumentException("Parameter 'taskFactory' cannot be null");
         if (historyManager == null) throw new IllegalArgumentException("Parameter 'historyManager' cannot be null");
-        this.tFac = taskFactory;
-        this.hMan = historyManager;
+        this.taskFactory = taskFactory;
+        this.historyManager = historyManager;
     }
 
     //#################################### Get methods ####################################
@@ -27,7 +28,7 @@ public class InMemoryTaskManager implements TaskManager {
     public Task getTaskById(int id) {
         Task task = tasks.get(id);
         if (task == null) return null;
-        hMan.add(task);
+        historyManager.add(task);
         return task;
     }
 
@@ -66,56 +67,61 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     public List<Task> getHistory() {
-        return hMan.getHistory();
+        return historyManager.getHistory();
     }
 
 
     //#################################### Edit methods ####################################
 
     @Override
-    public int add(Task task) {
-        if (task == null) return -1;
-        Task newTask = tFac.newTask(task);
+    public Task add(Task task) {
+        if (task == null) return null;
+        Task newTask = taskFactory.newTask(task);
         tasks.put(newTask.getId(), newTask);
-        return newTask.getId();
+        return newTask;
     }
 
     @Override
-    public int add(Epic epic) {
-        if (epic == null) return -1;
-        Epic newEpic = tFac.newEpic(epic);
+    public Epic add(Epic epic) {
+        if (epic == null) return null;
+        Epic newEpic = taskFactory.newEpic(epic);
         tasks.put(newEpic.getId(), newEpic);
-        return newEpic.getId();
+        return newEpic;
     }
 
     @Override
-    public int add(Subtask subtask) {
-        if (subtask == null) return -1;
+    public Subtask add(Subtask subtask) {
+        if (subtask == null) return null;
         Task eTask = tasks.get(subtask.getEpicId());
-        if (eTask == null) return -2;
+        if (eTask == null) return null;
         if (eTask instanceof Epic epic) {
-            Subtask newSubtask = tFac.newSubtask(subtask);
+            Subtask newSubtask = taskFactory.newSubtask(subtask);
             epic.linkSubtask(newSubtask);
             tasks.put(newSubtask.getId(), newSubtask);
-            return newSubtask.getId();
+            return newSubtask;
         }
-        return -3;
+        return null;
     }
 
+    // так давайте без этих кодов: -1, -2 и так далее.
+    // пусть ваши add/update методы возвращают новый/обновленный объект
     @Override
-    public int update(Task task) {
-        if (task == null)  return -1;
-        if (!tasks.containsKey(task.getId()))  return -2;
-        return tasks.get(task.getId()).update(task);
+    public Task update(Task task) {
+        if (task == null)  return null;
+        if (!tasks.containsKey(task.getId()))  return null;
+        Task foundTask = tasks.get(task.getId());
+        foundTask.update(task);
+        return foundTask;
     }
 
 
     //#################################### Remove methods. ####################################
 
+    // тут или void или boolean: true - если удален, false - если такого объекта нет
     @Override
-    public int removeById(int id) {
+    public boolean removeById(int id) {
         Task task = tasks.get(id);
-        if (task == null) return -1;
+        if (task == null) return false;
         if (task instanceof Epic epic) {
             for (Subtask subtask : epic.getSubtasks().values()) {
                 tasks.remove(subtask.getId());
@@ -127,7 +133,7 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             tasks.remove(id);
         }
-        return 0;
+        return true;
     }
 
     @Override

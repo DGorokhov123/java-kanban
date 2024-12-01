@@ -45,16 +45,16 @@ class TaskTest {
 
     @Test
     void update() {
-        int response = task.update(null);                                                // task = null
-        assertEquals(-1, response);
+        boolean up1 = task.update(null);                                                // task = null
+        assertFalse(up1);
         assertEquals(123, task.getId());
         assertEquals("task title", task.getTitle());
         assertEquals("task description", task.getDescription());
         assertEquals(TaskStatus.NEW, task.getStatus());
 
         Task task2 = new Task("third title", "third description", TaskStatus.DONE);      // Update correctly
-        response = task.update(task2);
-        assertEquals(0, response);
+        boolean up2 = task.update(task2);
+        assertTrue(up2);
         assertEquals(123, task.getId());
         assertEquals("third title", task.getTitle());
         assertEquals("third description", task.getDescription());

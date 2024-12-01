@@ -69,15 +69,14 @@ public class Task {
     /**
      * Updates this task using data from received task.
      * @param task new instance of Task object, containing new data
-     * @return {@code 0} Normal termination, {@code -N} Error code.
      */
-    public int update(Task task) {
-        if (task == null)  return -1;
-        if (task.getClass() != this.getClass())  return -2;
+    public boolean update(Task task) {
+        if (task == null) return false;
+        if (task.getClass() != this.getClass()) return false;
         setTitle(task.getTitle());
         setDescription(task.getDescription());
         setStatus(task.getStatus());
-        return 0;
+        return true;
     }
 
     /**

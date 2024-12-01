@@ -63,29 +63,29 @@ public class Epic extends Task {
     /**
      * Makes references between this Epic and its Subtask
      * @param subtask Subtask object to link
-     * @return {@code 0} Normal termination, {@code -N} Error code.
+     * @return {@code true} - normal termination, {@code false} null parameter or already linked
      */
-    public int linkSubtask(Subtask subtask) {
-        if (subtask == null) return -1;
-        if (subtasks.containsKey(subtask.getId()))  return -2;
+    public boolean linkSubtask(Subtask subtask) {
+        if (subtask == null) return false;
+        if (subtasks.containsKey(subtask.getId()))  return false;
         subtasks.put(subtask.getId(), subtask);
         subtask.setEpic(this);
         calculateStatus();
-        return 0;
+        return true;
     }
 
     /**
      * Removes references between this Epic and Subtask with specified ID.
      * @param id ID of existing extended Task type object to unlink.
-     * @return {@code 0} Normal termination, {@code -N} Error code.
+     * @return {@code true} - normal termination, {@code false} if not found
      */
-    public int unlinkSubtask(int id) {
+    public boolean unlinkSubtask(int id) {
         Subtask subtask = subtasks.get(id);
-        if (subtask == null) return -1;
+        if (subtask == null) return false;
         subtask.setEpic(null);
         subtasks.remove(id);
         calculateStatus();
-        return 0;
+        return true;
     }
 
     /**

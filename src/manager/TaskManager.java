@@ -1,6 +1,6 @@
 package manager;
 import task.*;
-import java.util.ArrayList;
+
 import java.util.List;
 
 /**
@@ -48,41 +48,42 @@ public interface TaskManager {
 
     /**
      * Adds a new simple Task
-     * @param task Task object to add
-     * @return {@code int} new task ID in case of normal termination, {@code -N} Error code.
+     * @param task Task data object to add to manager
+     * @return {@code Task} new generated task, or {@code null} in case of wrong parameter
      */
-    int add(Task task);
+    Task add(Task task);
 
     /**
      * Adds a new Epic
-     * @param epic Epic object to add
-     * @return {@code int} new epic ID in case of normal termination, {@code -N} Error code.
+     * @param epic Epic data object to add to manager
+     * @return {@code Epic} new generated epic, or {@code null} in case of wrong parameter
      */
-    int add(Epic epic);
+    Epic add(Epic epic);
 
     /**
      * Adds a new Subtask
-     * @param subtask Subtask object to add
-     * @return {@code int} new subtask ID in case of normal termination, {@code -N} Error code.
+     * @param subtask Subtask data object to add to manager
+     * @return {@code Subtask} new generated subtask, or {@code null} in case of wrong parameter
      */
-    int add(Subtask subtask);
+    Subtask add(Subtask subtask);
 
     /**
      * Updates an existing Task (or its child Epic / Subtask).
      * @param task New instance of extended Task type object, containing new data for existing entry.
-     * @return {@code 0} Normal termination, {@code -N} Error code.
+     * @return {@code Task} updated object, or {@code null} in case of wrong ID
      */
-    int update(Task task);
+    Task update(Task task);
 
 
     //#################################### Remove methods. ####################################
 
     /**
      * Removes an existing Task (or its child Epic / Subtask).
+     *
      * @param id ID of existing extended Task type object to remove.
-     * @return {@code 0} Normal termination, {@code -N} Error code.
+     * @return {@code true} task is removed, {@code false} task is not found
      */
-    int removeById(int id);
+    boolean removeById(int id);
 
     /**
      * Removes all simple tasks (strictly Task objects, not Epic / Subtask).

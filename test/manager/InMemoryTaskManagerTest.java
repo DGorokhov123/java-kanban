@@ -18,9 +18,9 @@ class InMemoryTaskManagerTest {
         HistoryManager historyManager = new InMemoryHistoryManager(10);
         tm = new InMemoryTaskManager(taskFactory, historyManager);
         tm.add(new Task("task 1", "1", TaskStatus.NEW));
-        int e1 = tm.add(new Epic("epic 1", "2"));
-        tm.add(new Subtask("subtask 1", "3", TaskStatus.NEW, e1));
-        tm.add(new Subtask("subtask 2", "4", TaskStatus.NEW, e1));
+        Epic e1 = tm.add(new Epic("epic 1", "2"));
+        tm.add(new Subtask("subtask 1", "3", TaskStatus.NEW, e1.getId()));
+        tm.add(new Subtask("subtask 2", "4", TaskStatus.NEW, e1.getId()));
         tm.add(new Task("task 2", "5", TaskStatus.NEW));
     }
 
@@ -153,22 +153,19 @@ class InMemoryTaskManagerTest {
     @Test
     void keepFieldsWhenAdd() {
         Task t1 = new Task("very", "important data", TaskStatus.DONE);
-        int t1Id = tm.add(t1);
-        Task t2 = tm.getTaskById(t1Id);
+        Task t2 = tm.add(t1);
         assertEquals(t1.getTitle(), t2.getTitle());
         assertEquals(t1.getDescription(), t2.getDescription());
         assertEquals(t1.getStatus(), t2.getStatus());
 
         Epic e1 = new Epic("very", "important data");
-        int e1Id = tm.add(e1);
-        Task e2 = tm.getTaskById(e1Id);
+        Epic e2 = tm.add(e1);
         assertEquals(e1.getTitle(), e2.getTitle());
         assertEquals(e1.getDescription(), e2.getDescription());
         assertEquals(e1.getStatus(), e2.getStatus());
 
-        Subtask s1 = new Subtask("very", "important data", TaskStatus.DONE, e1Id);
-        int s1Id = tm.add(s1);
-        Task s2 = tm.getTaskById(s1Id);
+        Subtask s1 = new Subtask("very", "important data", TaskStatus.DONE, e2.getId());
+        Subtask s2 = tm.add(s1);
         assertEquals(s1.getTitle(), s2.getTitle());
         assertEquals(s1.getDescription(), s2.getDescription());
         assertEquals(s1.getStatus(), s2.getStatus());

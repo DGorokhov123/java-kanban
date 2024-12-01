@@ -12,9 +12,9 @@ public interface HistoryManager {
     /**
      * Adds the viewed task to history
      * @param task Task object to add
-     * @return {@code 0} Normal termination {@code -N} Error code
+     * @return {@code true} task added to history, or {@code false} in case of wrong parameter
      */
-    int add(Task task);
+    boolean add(Task task);
 
     /**
      * Returns list of last viewed tasks

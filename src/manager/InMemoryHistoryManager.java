@@ -7,8 +7,9 @@ import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager{
 
-    LinkedList<Task> history = new LinkedList<>();
-    final int historySize;
+    // Ну конечно private, спасибо что заметили!
+    final private LinkedList<Task> history = new LinkedList<>();
+    final private int historySize;
 
     public InMemoryHistoryManager(int historySize) {
         if (historySize < 1) throw new IllegalArgumentException("Parameter 'historySize' cannot be less than 1");
@@ -16,11 +17,11 @@ public class InMemoryHistoryManager implements HistoryManager{
     }
 
     @Override
-    public int add(Task task) {
-        if (task == null) return -1;
+    public boolean add(Task task) {
+        if (task == null) return false;
         history.addLast(task);
         if (history.size() > historySize) history.pollFirst();
-        return 0;
+        return true;
     }
 
     @Override

@@ -21,42 +21,42 @@ public class Main {
         tMan.add(gson.fromJson(json1, Task.class));
 
         // Simple task #2 - add + update
-        int t2 = tMan.add(new Task("Старый тайтл", "метод update не сработал!", TaskStatus.NEW));
-        tMan.update(new Task(t2, "Новый тайтл", "метод update успешно отработал", TaskStatus.IN_PROGRESS));
-        tMan.update(new Task(t2, "Новый тайтл", "метод update успешно отработал", TaskStatus.DONE));
+        Task t2 = tMan.add(new Task("Старый тайтл", "метод update не сработал!", TaskStatus.NEW));
+        tMan.update(new Task(t2.getId(), "Новый тайтл", "метод update успешно отработал", TaskStatus.IN_PROGRESS));
+        tMan.update(new Task(t2.getId(), "Новый тайтл", "метод update успешно отработал", TaskStatus.DONE));
 
         // Simple task #3 - add + delete
-        int t3 = tMan.add(new Task("Удаление таска", "это должно быть удалено", TaskStatus.NEW));
-        tMan.removeById(t3);
+        Task t3 = tMan.add(new Task("Удаление таска", "это должно быть удалено", TaskStatus.NEW));
+        tMan.removeById(t3.getId());
 
         // Epic #1 - from json
-        int e1 = tMan.add(gson.fromJson("{\"subtasks\":{},\"id\":0," +
+        Epic e1 = tMan.add(gson.fromJson("{\"subtasks\":{},\"id\":0," +
                 "\"title\":\"Наладить жизнь в России\",\"description\":\"\",\"status\":\"NEW\"}", Epic.class));
-        tMan.add(gson.fromJson("{\"epicId\":" + e1 + ",\"id\":0,\"title\":\"Запретить все плохое\"," +
+        tMan.add(gson.fromJson("{\"epicId\":" + e1.getId() + ",\"id\":0,\"title\":\"Запретить все плохое\"," +
                 "\"description\":\"Составить реестр плохого, принять законы\",\"status\":\"DONE\"}", Subtask.class));
-        tMan.add(gson.fromJson("{\"epicId\":" + e1 + ",\"id\":0,\"title\":\"Избрать Трампа\"," +
+        tMan.add(gson.fromJson("{\"epicId\":" + e1.getId() + ",\"id\":0,\"title\":\"Избрать Трампа\"," +
                 "\"description\":\"Сделать Дони президентом США\",\"status\":\"DONE\"}", Subtask.class));
-        tMan.add(gson.fromJson("{\"epicId\":" + e1 + ",\"id\":0,\"title\":\"Укрепить рубль\"," +
+        tMan.add(gson.fromJson("{\"epicId\":" + e1.getId() + ",\"id\":0,\"title\":\"Укрепить рубль\"," +
                 "\"description\":\"и уменьшить ключевую ставку\",\"status\":\"NEW\"}", Subtask.class));
 
         // Epic #2 - add + delete
-        int e2 = tMan.add(new Epic("Проверить удаление эпиков", ""));
-        tMan.add(new Subtask("а также", "всех его сабтасков", TaskStatus.NEW, e2));
-        tMan.removeById(e2);
+        Epic e2 = tMan.add(new Epic("Проверить удаление эпиков", ""));
+        tMan.add(new Subtask("а также", "всех его сабтасков", TaskStatus.NEW, e2.getId()));
+        tMan.removeById(e2.getId());
 
         // Epic #3 - add + update + delete subtask
-        int e3 = tMan.add(new Epic("Название эпика надо изменить", ""));
-        int e3s1 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3));
-        int e3s2 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3));
-        int e3s3 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3));
-        int e3s4 = tMan.add(new Subtask("а вот этот сабтаск", "нужно удалить", TaskStatus.NEW, e3));
-        int e3s5 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3));
-        tMan.update(new Epic(e3, "Стать крутым прогером", "план надежный как швейцарские часы"));
-        tMan.update(new Subtask(e3s1, "Закончить курсы", "например Яндекс Практикум", TaskStatus.IN_PROGRESS));
-        tMan.update(new Subtask(e3s2, "Стать джуном", "найти любую работу", TaskStatus.NEW));
-        tMan.update(new Subtask(e3s3, "Стать мидлом", "найти работу за деньги", TaskStatus.NEW));
-        tMan.removeById(e3s4);
-        tMan.update(gson.fromJson("{\"epicId\":0,\"id\":" + e3s5 + ",\"title\":\"Стать сеньором\"," +
+        Epic e3 = tMan.add(new Epic("Название эпика надо изменить", ""));
+        Subtask e3s1 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3.getId()));
+        Subtask e3s2 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3.getId()));
+        Subtask e3s3 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3.getId()));
+        Subtask e3s4 = tMan.add(new Subtask("а вот этот сабтаск", "нужно удалить", TaskStatus.NEW, e3.getId()));
+        Subtask e3s5 = tMan.add(new Subtask("этот сабтаск", "нужно изменить", TaskStatus.NEW, e3.getId()));
+        tMan.update(new Epic(e3.getId(), "Стать крутым прогером", "план надежный как швейцарские часы"));
+        tMan.update(new Subtask(e3s1.getId(), "Закончить курсы", "например Яндекс Практикум", TaskStatus.IN_PROGRESS));
+        tMan.update(new Subtask(e3s2.getId(), "Стать джуном", "найти любую работу", TaskStatus.NEW));
+        tMan.update(new Subtask(e3s3.getId(), "Стать мидлом", "найти работу за деньги", TaskStatus.NEW));
+        tMan.removeById(e3s4.getId());
+        tMan.update(gson.fromJson("{\"epicId\":0,\"id\":" + e3s5.getId() + ",\"title\":\"Стать сеньором\"," +
                 "\"description\":\"и уехать на Бали\",\"status\":\"NEW\"}", Subtask.class));
 
 
