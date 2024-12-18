@@ -110,8 +110,8 @@ public class InMemoryTaskManager implements TaskManager {
         if (task == null)  return null;
         if (!tasks.containsKey(task.getId()))  return null;
         Task foundTask = tasks.get(task.getId());
-        foundTask.update(task);
-        return foundTask;
+        if (foundTask.update(task))  return foundTask;
+        return null;
     }
 
 
