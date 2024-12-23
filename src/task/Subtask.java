@@ -65,7 +65,7 @@ public class Subtask extends Task {
      * @param status new {@code TaskStatus} status to update
      */
     @Override
-    public void setStatus(TaskStatus status) {
+    void setStatus(TaskStatus status) {
         this.status = status;
         if (epic != null)  epic.setStatus(null);
     }

@@ -50,8 +50,8 @@ class EpicTest {
         Epic epic2 = new Epic("Any title", "Any description");
         assertEquals("Epic #0\t[NEW]\tAny title (Any description)", epic2.toString());
         assertEquals("Epic #15\t[NEW]\tEpic title (Epic description)", epic.toString());
-        epic.setDescription("");
-        assertEquals("Epic #15\t[NEW]\tEpic title", epic.toString());
+        epic2 = new Epic("Any title", "");
+        assertEquals("Epic #0\t[NEW]\tAny title", epic2.toString());
     }
 
 }

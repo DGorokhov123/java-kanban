@@ -23,20 +23,6 @@ class TaskTest {
     }
 
     @Test
-    void getAndSetTitle() {
-        assertEquals("task title", task.getTitle());
-        task.setTitle("Yet another title");
-        assertEquals("Yet another title", task.getTitle());
-    }
-
-    @Test
-    void getAndSetDescription() {
-        assertEquals("task description", task.getDescription());
-        task.setDescription("Yet another description");
-        assertEquals("Yet another description", task.getDescription());
-    }
-
-    @Test
     void getAndSetStatus() {
         assertEquals(TaskStatus.NEW, task.getStatus());
         task.setStatus(TaskStatus.IN_PROGRESS);
