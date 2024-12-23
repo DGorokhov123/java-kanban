@@ -2,7 +2,6 @@ import com.google.gson.Gson;
 import manager.*;
 import task.*;
 
-import java.util.List;
 import java.util.Random;
 
 public class Main {
