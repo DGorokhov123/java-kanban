@@ -42,8 +42,8 @@ class InMemoryTaskManagerTest {
         List<Subtask> subtasks = tm.getSubTasks(epics.get(0).getId());
         assertEquals("subtask 1", subtasks.get(0).getTitle());
         assertEquals("subtask 2", subtasks.get(1).getTitle());
-        assertNull(tm.getSubTasks(1));
-        assertNull(tm.getSubTasks(4));
+        assertTrue(tm.getSubTasks(1).isEmpty());
+        assertTrue(tm.getSubTasks(4).isEmpty());
     }
 
     @Test
@@ -114,26 +114,32 @@ class InMemoryTaskManagerTest {
 
     @Test
     void removeAllTasks() {
+        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
         tm.removeAllTasks();
-        assertNull(tm.getTasks());
+        assertTrue(tm.getTasks().isEmpty());
         assertEquals(1, tm.getEpics().size());
         assertEquals(2, tm.getSubTasks(2).size());
+        assertEquals(3, tm.getHistory().size());
     }
 
     @Test
     void removeAllSubtasks() {
+        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
         tm.removeAllSubtasks();
         assertEquals(2, tm.getTasks().size());
         assertEquals(1, tm.getEpics().size());
-        assertNull(tm.getSubTasks(2));
+        assertTrue(tm.getSubTasks(2).isEmpty());
+        assertEquals(3, tm.getHistory().size());
     }
 
     @Test
     void removeAllEpics() {
+        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
         tm.removeAllEpics();
         assertEquals(2, tm.getTasks().size());
-        assertNull(tm.getEpics());
-        assertNull(tm.getSubTasks(2));
+        assertTrue(tm.getEpics().isEmpty());
+        assertTrue(tm.getSubTasks(2).isEmpty());
+        assertEquals(2, tm.getHistory().size());
     }
 
     @Test

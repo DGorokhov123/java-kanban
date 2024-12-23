@@ -70,34 +70,49 @@ public class Main {
             for (Subtask subtask : tMan.getSubTasks(epic.getId()))  System.out.println("\t" + subtask.toString());
         }
 
+        System.out.println("----------------------------САБТАСК НЕСУЩЕСТВУЮЩЕГО ЭПИКА - getSubTasks(444)---------");
+        for (Subtask subtask : tMan.getSubTasks(444))  System.out.println("\t" + subtask.toString());
+
         System.out.println("----------------------------НЕСУЩЕСТВУЮЩИЕ ТАСК, САБ, ЭПИК---------------------------");
-        System.out.print(tMan.getTaskById(4568));
-        System.out.print(tMan.getTaskById(8745));
+        System.out.print(tMan.getTaskById(4568));            System.out.print(" ");
+        System.out.print(tMan.getTaskById(8745));            System.out.print(" ");
         System.out.println(tMan.getTaskById(9852));
 
         System.out.println("---------------------ИСТОРИЯ ПРОСМОТРОВ - getHistory() ----------------------");
         for (int i = 0; i < 20; i++) tMan.getTaskById(i);
-        tMan.getTaskById(15);
-        tMan.getTaskById(15);
+        tMan.getTaskById(6); tMan.getTaskById(6);
+        tMan.getTaskById(5);
+        tMan.getTaskById(6); tMan.getTaskById(6); tMan.getTaskById(6); tMan.getTaskById(6); tMan.getTaskById(6);
+        tMan.getTaskById(7);
         int historyCounter = 1;
-        if (tMan.getHistory() != null) for (Task task : tMan.getHistory()) {
-            System.out.println(historyCounter + ". " + task.toString());
-            historyCounter++;
-        } else System.out.println("Пустой список");
+        for (Task task : tMan.getHistory()) System.out.println(historyCounter++ + ". " + task.toString());
 
         System.out.println("---------------------ВСЕ ПРОСТЫЕ ТАСКИ - после removeAllTasks() ----------------------");
         tMan.removeAllTasks();
-        if (tMan.getTasks() != null) for (Task task : tMan.getTasks()) System.out.println(task);
-        else System.out.println("Пустой список");
+        for (Task task : tMan.getTasks()) System.out.println(task);
 
-        System.out.println("---------------------ВСЕ ЭПИКИ - после removeAllSubtasks() ----------------------");
+        System.out.println("---------------------ИСТОРИЯ ПРОСМОТРОВ - после removeAllTasks() ----------------------");
+        historyCounter = 1;
+        for (Task task : tMan.getHistory()) System.out.println(historyCounter++ + ". " + task.toString());
+
+        System.out.println("---------------------ВСЕ ЭПИКИ С САБТАСКАМИ - после removeAllSubtasks() ----------------------");
         tMan.removeAllSubtasks();
-        if (tMan.getEpics() != null) for (Epic epic : tMan.getEpics())  System.out.println(epic);
-        else System.out.println("Пустой список");
+        for (Epic epic : tMan.getEpics()) {
+            System.out.println(epic);
+            for (Subtask subtask : tMan.getSubTasks(epic.getId()))  System.out.println("\t" + subtask.toString());
+        }
+
+        System.out.println("---------------------ИСТОРИЯ ПРОСМОТРОВ - после removeAllSubtasks() ----------------------");
+        historyCounter = 1;
+        for (Task task : tMan.getHistory()) System.out.println(historyCounter++ + ". " + task.toString());
 
         System.out.println("---------------------ВСЕ ЭПИКИ - после removeAllEpics() ----------------------");
         tMan.removeAllEpics();
-        if (tMan.getEpics() != null) for (Epic epic : tMan.getEpics())  System.out.println(epic);
-        else System.out.println("Пустой список");
+        for (Epic epic : tMan.getEpics())  System.out.println(epic);
+
+        System.out.println("---------------------ИСТОРИЯ ПРОСМОТРОВ - после removeAllEpics() ----------------------");
+        historyCounter = 1;
+        for (Task task : tMan.getHistory()) System.out.println(historyCounter++ + ". " + task.toString());
+
     }
 }
