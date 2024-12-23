@@ -2,6 +2,9 @@ import com.google.gson.Gson;
 import manager.*;
 import task.*;
 
+import java.util.List;
+import java.util.Random;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -9,7 +12,43 @@ public class Main {
         HistoryManager historyManager = Managers.getDefaultHistory();
         TaskManager tMan = Managers.getDefault(taskFactory, historyManager);
 
-        optionalDemo(tMan);
+        //optionalDemo(tMan);
+        continuousDemo(tMan);
+    }
+
+    private static void continuousDemo(TaskManager tMan) {
+        Random rnd = new Random();
+        int choice = 0;
+        int lastID = 0;
+        int lastEpicID = 0;
+
+        for (int i = 0; i < 100000; i++) {
+            choice = rnd.nextInt(30);
+            if (choice == 0) {
+                lastID = tMan.add(new Task("Task", "created on step " + i, TaskStatus.NEW)).getId();
+            } else if (choice == 1) {
+                lastID = tMan.add(new Epic("Epic", "created on step " + i)).getId();
+                lastEpicID = lastID;
+            } else if (choice <= 3 && lastEpicID > 0) {
+                lastID = tMan.add(new Subtask("Subtask", "created on step " + i, TaskStatus.NEW, lastEpicID)).getId();
+            } else if (choice <= 5 && lastID > 0) {
+                int rndRes = rnd.nextInt(lastID);
+                Task tsk = tMan.getTaskById(rndRes);
+                if (tsk instanceof Epic) {
+                    tMan.update(new Epic(rndRes, "Epic", "viewed on step " + i));
+                } else if (tsk instanceof Subtask) {
+                    tMan.update(new Subtask(rndRes, "Subtask", "viewed on step " + i, TaskStatus.DONE));
+                } else if (tsk instanceof Task) {
+                    tMan.update(new Task(rndRes, "Task", "viewed on step " + i, TaskStatus.DONE));
+                }
+            } else {
+                int rndRes = rnd.nextInt(lastID + 1);
+                if (rndRes != lastEpicID) tMan.removeById(rndRes);
+            }
+        }
+
+        int historyCounter = 1;
+        for (Task task : tMan.getHistory()) System.out.println(historyCounter++ + ". " + task.toString());
     }
 
 
