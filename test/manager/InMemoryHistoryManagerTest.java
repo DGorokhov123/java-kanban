@@ -75,11 +75,7 @@ class InMemoryHistoryManagerTest {
 
     @Test
     void negativeOrZeroSize() {
-        try {
-            InMemoryHistoryManager hm = new InMemoryHistoryManager(0);
-        } catch (Exception e) {
-            assertEquals("Size of history cannot be less than 1", e.getMessage());
-        }
+        assertThrows(IllegalArgumentException.class, () ->  new InMemoryHistoryManager(0));
     }
 
 }
