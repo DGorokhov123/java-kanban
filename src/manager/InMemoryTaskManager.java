@@ -34,36 +34,31 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<Task> getTasks() {
-        if (tasks.isEmpty()) return null;
-        ArrayList<Task> result = new ArrayList<>();
+        List<Task> result = new ArrayList<>();
         for (Task task : tasks.values()) {
             if (task instanceof Subtask || task instanceof Epic) continue;
             result.add(task);
         }
-        if (result.isEmpty()) return null;
         return result;
     }
 
     @Override
     public List<Epic> getEpics() {
-        if (tasks.isEmpty()) return null;
-        ArrayList<Epic> result = new ArrayList<>();
+        List<Epic> result = new ArrayList<>();
         for (Task task : tasks.values()) {
             if (task instanceof Epic epic)  result.add(epic);
         }
-        if (result.isEmpty()) return null;
         return result;
     }
 
     @Override
     public List<Subtask> getSubTasks(int epicId) {
+        List<Subtask> result = new ArrayList<>();
         Task task = tasks.get(epicId);
-        if (task == null) return null;
         if (task instanceof Epic epic) {
-            if (epic.getSubtasks().isEmpty()) return null;
-            return new ArrayList<>(epic.getSubtasks().values());
+            result.addAll(epic.getSubtasks().values());
         }
-        return null;
+        return result;
     }
 
     public List<Task> getHistory() {
@@ -103,8 +98,6 @@ public class InMemoryTaskManager implements TaskManager {
         return null;
     }
 
-    // так давайте без этих кодов: -1, -2 и так далее.
-    // пусть ваши add/update методы возвращают новый/обновленный объект
     @Override
     public Task update(Task task) {
         if (task == null)  return null;
@@ -117,22 +110,20 @@ public class InMemoryTaskManager implements TaskManager {
 
     //#################################### Remove methods. ####################################
 
-    // тут или void или boolean: true - если удален, false - если такого объекта нет
     @Override
     public boolean removeById(int id) {
         Task task = tasks.get(id);
         if (task == null) return false;
         if (task instanceof Epic epic) {
             for (Subtask subtask : epic.getSubtasks().values()) {
+                historyManager.remove(subtask.getId());
                 tasks.remove(subtask.getId());
             }
-            tasks.remove(id);
         } else if (task instanceof Subtask subtask) {
             if (subtask.getEpic() != null)  subtask.getEpic().unlinkSubtask(id);
-            tasks.remove(id);
-        } else {
-            tasks.remove(id);
         }
+        historyManager.remove(id);
+        tasks.remove(id);
         return true;
     }
 
@@ -142,6 +133,7 @@ public class InMemoryTaskManager implements TaskManager {
         while (taskIterator.hasNext()) {
             Task task = taskIterator.next();
             if (task instanceof Epic || task instanceof Subtask) continue;
+            historyManager.remove(task.getId());
             taskIterator.remove();
         }
     }
@@ -153,6 +145,7 @@ public class InMemoryTaskManager implements TaskManager {
             Task task = taskIterator.next();
             if (task instanceof Subtask subtask) {
                 if (subtask.getEpic() != null) subtask.getEpic().unlinkSubtask(subtask.getId());
+                historyManager.remove(task.getId());
                 taskIterator.remove();
             }
         }
@@ -163,7 +156,10 @@ public class InMemoryTaskManager implements TaskManager {
         Iterator<Task> taskIterator = tasks.values().iterator();
         while (taskIterator.hasNext()) {
             Task task = taskIterator.next();
-            if (task instanceof Epic || task instanceof Subtask)  taskIterator.remove();
+            if (task instanceof Epic || task instanceof Subtask) {
+                historyManager.remove(task.getId());
+                taskIterator.remove();
+            }
         }
     }
 

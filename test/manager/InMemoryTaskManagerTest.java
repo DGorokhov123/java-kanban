@@ -42,8 +42,8 @@ class InMemoryTaskManagerTest {
         List<Subtask> subtasks = tm.getSubTasks(epics.get(0).getId());
         assertEquals("subtask 1", subtasks.get(0).getTitle());
         assertEquals("subtask 2", subtasks.get(1).getTitle());
-        assertNull(tm.getSubTasks(1));
-        assertNull(tm.getSubTasks(4));
+        assertTrue(tm.getSubTasks(1).isEmpty());
+        assertTrue(tm.getSubTasks(4).isEmpty());
     }
 
     @Test
@@ -51,23 +51,18 @@ class InMemoryTaskManagerTest {
         assertTrue(tm.getHistory().isEmpty());
         tm.getTaskById(1);
         assertEquals(1, tm.getHistory().size());
-        assertEquals(1, tm.getHistory().get(0).getId());
-        for (int i = 0; i < 12; i++) tm.getTaskById(1);
+        assertEquals(1, tm.getHistory().getFirst().getId());
+        for (int i = 0; i < 12; i++) tm.getTaskById(i);
         tm.getTaskById(4);
         tm.getTaskById(2);
         tm.getTaskById(5);
         tm.getTaskById(2);
-        assertEquals(10, tm.getHistory().size());
+        assertEquals(5, tm.getHistory().size());
         assertEquals(1, tm.getHistory().get(0).getId());
-        assertEquals(1, tm.getHistory().get(1).getId());
-        assertEquals(1, tm.getHistory().get(2).getId());
-        assertEquals(1, tm.getHistory().get(3).getId());
-        assertEquals(1, tm.getHistory().get(4).getId());
-        assertEquals(1, tm.getHistory().get(5).getId());
-        assertEquals(4, tm.getHistory().get(6).getId());
-        assertEquals(2, tm.getHistory().get(7).getId());
-        assertEquals(5, tm.getHistory().get(8).getId());
-        assertEquals(2, tm.getHistory().get(9).getId());
+        assertEquals(3, tm.getHistory().get(1).getId());
+        assertEquals(4, tm.getHistory().get(2).getId());
+        assertEquals(5, tm.getHistory().get(3).getId());
+        assertEquals(2, tm.getHistory().get(4).getId());
     }
 
     @Test
@@ -97,57 +92,62 @@ class InMemoryTaskManagerTest {
 
     @Test
     void removeById() {
-        tm.removeById(1);
+        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
+        assertEquals(5, tm.getHistory().size());                  // history size = 5
+
+        tm.removeById(1);                                         // remove simple task #1
         assertNull(tm.getTaskById(1));
+        assertEquals(4, tm.getHistory().size());
 
         assertEquals(2, tm.getEpics().getFirst().getSubtasks().size());
-        tm.removeById(3);
+        tm.removeById(3);                                         // remove subtask #3
         assertNull(tm.getTaskById(3));
         assertEquals(1, tm.getEpics().getFirst().getSubtasks().size());
+        assertEquals(3, tm.getHistory().size());
 
         assertEquals(3, tm.getTasks().size() + tm.getEpics().size() + tm.getSubTasks(2).size());
-        tm.removeById(2);
+        tm.removeById(2);                                         // remove epic #2 (and its subtask #4)
         assertNull(tm.getTaskById(2));
         assertNull(tm.getTaskById(4));
         assertNotNull(tm.getTaskById(5));
+        assertEquals(1, tm.getHistory().size());
     }
 
     @Test
     void removeAllTasks() {
+        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
         tm.removeAllTasks();
-        assertNull(tm.getTasks());
+        assertTrue(tm.getTasks().isEmpty());
         assertEquals(1, tm.getEpics().size());
         assertEquals(2, tm.getSubTasks(2).size());
+        assertEquals(3, tm.getHistory().size());
     }
 
     @Test
     void removeAllSubtasks() {
+        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
         tm.removeAllSubtasks();
         assertEquals(2, tm.getTasks().size());
         assertEquals(1, tm.getEpics().size());
-        assertNull(tm.getSubTasks(2));
+        assertTrue(tm.getSubTasks(2).isEmpty());
+        assertEquals(3, tm.getHistory().size());
     }
 
     @Test
     void removeAllEpics() {
+        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
         tm.removeAllEpics();
         assertEquals(2, tm.getTasks().size());
-        assertNull(tm.getEpics());
-        assertNull(tm.getSubTasks(2));
+        assertTrue(tm.getEpics().isEmpty());
+        assertTrue(tm.getSubTasks(2).isEmpty());
+        assertEquals(2, tm.getHistory().size());
     }
 
     @Test
     void nullParams() {
-        try {
-            TaskManager tm1 = new InMemoryTaskManager(null, new InMemoryHistoryManager(10));
-        } catch (Exception e) {
-            assertEquals("Parameter 'taskFactory' cannot be null", e.getMessage());
-        }
-        try {
-            TaskManager tm1 = new InMemoryTaskManager(new TaskFactory(), null);
-        } catch (Exception e) {
-            assertEquals("Parameter 'historyManager' cannot be null", e.getMessage());
-        }
+        assertThrows(IllegalArgumentException.class, () ->  new InMemoryTaskManager(null, null));
+        assertThrows(IllegalArgumentException.class, () ->  new InMemoryTaskManager(new TaskFactory(), null));
+        assertThrows(IllegalArgumentException.class, () ->  new InMemoryTaskManager(null, new InMemoryHistoryManager()));
     }
 
     @Test

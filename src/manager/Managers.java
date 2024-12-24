@@ -29,11 +29,11 @@ public class Managers {
     //#################################### History Manager ####################################
 
     /**
-     * Returns a new default history manager with size of 10 items
+     * Returns a new default history manager with unlimited size
      * @return {@code HistoryManager} created object
      */
     public static HistoryManager getDefaultHistory() {
-        return getDefaultHistory(10);
+        return new InMemoryHistoryManager();
     }
 
     /**
@@ -42,7 +42,6 @@ public class Managers {
      * @return {@code HistoryManager} created object
      */
     public static HistoryManager getDefaultHistory(int historySize) {
-        if (historySize < 1) historySize = 10;
         return new InMemoryHistoryManager(historySize);
     }
 

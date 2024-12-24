@@ -41,7 +41,7 @@ public class Epic extends Task {
      * Sets status of this Epic by calculation based on subtasks statuses.
      */
     @Override
-    public void setStatus(TaskStatus status) {
+    void setStatus(TaskStatus status) {
         calculateStatus();
     }
 

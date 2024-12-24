@@ -22,4 +22,11 @@ public interface HistoryManager {
      */
     List<Task> getHistory();
 
+    /**
+     * Removes task with specified id from history
+     * @param id Task id to remove
+     * @return {@code true} task successfully removed, or {@code false} if not
+     */
+    boolean remove(int id);
+
 }
