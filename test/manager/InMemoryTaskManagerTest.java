@@ -145,16 +145,9 @@ class InMemoryTaskManagerTest {
 
     @Test
     void nullParams() {
-        try {
-            TaskManager tm1 = new InMemoryTaskManager(null, new InMemoryHistoryManager(10));
-        } catch (Exception e) {
-            assertEquals("Parameter 'taskFactory' cannot be null", e.getMessage());
-        }
-        try {
-            TaskManager tm1 = new InMemoryTaskManager(new TaskFactory(), null);
-        } catch (Exception e) {
-            assertEquals("Parameter 'historyManager' cannot be null", e.getMessage());
-        }
+        assertThrows(IllegalArgumentException.class, () ->  new InMemoryTaskManager(null, null));
+        assertThrows(IllegalArgumentException.class, () ->  new InMemoryTaskManager(new TaskFactory(), null));
+        assertThrows(IllegalArgumentException.class, () ->  new InMemoryTaskManager(null, new InMemoryHistoryManager()));
     }
 
     @Test
