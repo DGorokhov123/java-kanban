@@ -2,20 +2,47 @@ import com.google.gson.Gson;
 import manager.*;
 import task.*;
 
+import java.io.File;
 import java.util.Random;
 
 public class Main {
 
     public static void main(String[] args) {
+        int choice = 1;
+
+        if (choice == 0)  fileBackedMakeFile();
+        if (choice == 1)  fileBackedDemo();
+        if (choice == 2)  inMemoryDemo();
+        if (choice == 3)  continuousDemo();
+    }
+
+    private static void inMemoryDemo() {
         TaskFactory taskFactory = Managers.getDefaultFactory();
         HistoryManager historyManager = Managers.getDefaultHistory();
         TaskManager tMan = Managers.getDefault(taskFactory, historyManager);
-
-        //optionalDemo(tMan);
-        continuousDemo(tMan);
+        optionalDemo(tMan);
+        removeDemo(tMan);   // strictly after optionalDemo
     }
 
-    private static void continuousDemo(TaskManager tMan) {
+    private static void fileBackedDemo() {
+        TaskFactory taskFactory = Managers.getDefaultFactory();
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        TaskManager tMan = Managers.loadFromFile(taskFactory, historyManager, new File("file1.csv"));
+        tMan.add(new Task("Добавим задачу", "и запишем в файл!", TaskStatus.NEW));
+        showAll(tMan);
+    }
+
+    private static void fileBackedMakeFile() {
+        TaskFactory taskFactory = Managers.getDefaultFactory();
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        TaskManager tMan = new FileBackedTaskManager(taskFactory, historyManager, new File("file1.csv"));
+        optionalDemo(tMan);
+    }
+
+    private static void continuousDemo() {
+        TaskFactory taskFactory = Managers.getDefaultFactory();
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        TaskManager tMan = Managers.getDefault(taskFactory, historyManager);
         Random rnd = new Random();
         int choice = 0;
         int lastID = 0;
@@ -98,15 +125,7 @@ public class Main {
                 "\"description\":\"и уехать на Бали\",\"status\":\"NEW\"}", Subtask.class));
 
 
-        // Show information
-        System.out.println("----------------------------ВСЕ ПРОСТЫЕ ТАСКИ - getTasks() ---------------------------");
-        for (Task task : tMan.getTasks())  System.out.println(task);
-
-        System.out.println("----------------------------ВСЕ ЭПИКИ С САБТАСКАМИ - getEpics() + getSubTasks()---------");
-        for (Epic epic : tMan.getEpics()) {
-            System.out.println(epic);
-            for (Subtask subtask : tMan.getSubTasks(epic.getId()))  System.out.println("\t" + subtask.toString());
-        }
+        showAll(tMan);
 
         System.out.println("----------------------------САБТАСК НЕСУЩЕСТВУЮЩЕГО ЭПИКА - getSubTasks(444)---------");
         for (Subtask subtask : tMan.getSubTasks(444))  System.out.println("\t" + subtask.toString());
@@ -125,6 +144,23 @@ public class Main {
         int historyCounter = 1;
         for (Task task : tMan.getHistory()) System.out.println(historyCounter++ + ". " + task.toString());
 
+    }
+
+    private static void showAll(TaskManager tMan) {
+        // Show information
+        System.out.println("----------------------------ВСЕ ПРОСТЫЕ ТАСКИ - getTasks() ---------------------------");
+        for (Task task : tMan.getTasks())  System.out.println(task);
+
+        System.out.println("----------------------------ВСЕ ЭПИКИ С САБТАСКАМИ - getEpics() + getSubTasks()---------");
+        for (Epic epic : tMan.getEpics()) {
+            System.out.println(epic);
+            for (Subtask subtask : tMan.getSubTasks(epic.getId()))  System.out.println("\t" + subtask.toString());
+        }
+    }
+
+
+    private static void removeDemo(TaskManager tMan) {
+        int historyCounter;
         System.out.println("---------------------ВСЕ ПРОСТЫЕ ТАСКИ - после removeAllTasks() ----------------------");
         tMan.removeAllTasks();
         for (Task task : tMan.getTasks()) System.out.println(task);
@@ -151,6 +187,5 @@ public class Main {
         System.out.println("---------------------ИСТОРИЯ ПРОСМОТРОВ - после removeAllEpics() ----------------------");
         historyCounter = 1;
         for (Task task : tMan.getHistory()) System.out.println(historyCounter++ + ". " + task.toString());
-
     }
 }
