@@ -53,6 +53,15 @@ public class InMemoryHistoryManager implements HistoryManager {
         return true;
     }
 
+    /**
+     * Resets history to original state
+     */
+    @Override
+    public void clear() {
+        history.clear();
+        head = tail = null;
+    }
+
     private boolean linkLast(Task task) {
         if (task == null) return false;
         if (tail == null) {                               // empty chain
