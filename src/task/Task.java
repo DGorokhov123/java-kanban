@@ -80,6 +80,13 @@ public class Task {
     }
 
     /**
+     * Represents the task as a string array to write to CSV file. Usable with com.opencsv.CSVWriter
+     */
+    public String[] toCSVArray() {
+        return new String[] { String.valueOf(id), TaskType.TASK.toString(), title, status.toString(), description };
+    }
+
+    /**
      * Represents task as string to print. Usable with System.out.println()
      */
     @Override
