@@ -47,7 +47,7 @@ public class TaskFactory {
         boolean readMode = false;
         StringBuilder curValue = new StringBuilder();
         for (char c : line.toCharArray()) {
-            if ( c == '"') {
+            if (c == '"') {
                 readMode = !readMode;
             } else if (c == ',' && !readMode) {
                 values.add(curValue.toString());
