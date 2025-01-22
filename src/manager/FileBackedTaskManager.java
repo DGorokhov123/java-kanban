@@ -6,7 +6,6 @@ import com.opencsv.exceptions.CsvException;
 import task.*;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
@@ -20,7 +19,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     private void save() {
         String[] header = { "id", "type", "title", "status", "description", "epic" };
-        try ( CSVWriter writer = new CSVWriter(new FileWriter(file)) ) {
+        try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
             writer.writeNext(header);
             for (Task task : tasks.values())  writer.writeNext(task.toCSVArray());
         } catch (IOException e) {
@@ -41,7 +40,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         historyManager.clear();
         tasks.clear();
 
-        try ( CSVReader reader = new CSVReader(new FileReader(file)) ) {
+        try (CSVReader reader = new CSVReader(new FileReader(file))) {
             List<String[]> lines = reader.readAll();
             if (!lines.isEmpty())  lines.removeFirst();
             for (String[] line : lines) {
