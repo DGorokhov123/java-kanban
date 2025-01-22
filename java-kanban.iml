@@ -24,7 +24,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="google.code.gson" level="project" scope="TEST" />
-    <orderEntry type="library" name="opencsv" level="project" scope="TEST" />
+    <orderEntry type="library" name="google.code.gson" level="project" scope="COMPILE" />
+    <orderEntry type="library" name="opencsv" level="project" scope="COMPILE" />
   </component>
 </module>
