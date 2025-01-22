@@ -62,7 +62,7 @@ public class TaskFactory {
                 res = new Task(id, title, description, status);
             }
 
-        } catch ( IllegalArgumentException e ) {    // NumberFormatException is subclass of IllegalArgumentException
+        } catch (IllegalArgumentException e) {    // NumberFormatException is subclass of IllegalArgumentException
             StringBuilder errorMessage = new StringBuilder("Incorrect fields of CSV array:");
             for (String el : array)  errorMessage.append(" \"").append(el).append("\",");
             throw new WrongCSVArrayException(errorMessage.toString());
