@@ -83,12 +83,19 @@ public class Subtask extends Task {
     }
 
     /**
-     * Represents the Subtask as a string array to write to CSV file. Usable with com.opencsv.CSVWriter
+     * Represents the Subtask as a string to write to CSV file.
      */
     @Override
-    public String[] toCSVArray() {
+    public String toCSVLine() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\"").append(id).append("\",");
+        builder.append("\"").append(TaskType.SUBTASK.toString()).append("\",");
+        builder.append("\"").append(title).append("\",");
+        builder.append("\"").append(status.toString()).append("\",");
+        builder.append("\"").append(description).append("\",");
         String eId = (epic == null) ? "" : Integer.toString(epic.getId());
-        return new String[] { String.valueOf(id), TaskType.SUBTASK.toString(), title, status.toString(), description, eId };
+        builder.append("\"").append(eId).append("\"");
+        return builder.toString();
     }
 
     /**

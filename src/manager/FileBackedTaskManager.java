@@ -1,12 +1,7 @@
 package manager;
 
-import com.opencsv.CSVReader;
-import com.opencsv.CSVWriter;
-import com.opencsv.exceptions.CsvException;
 import task.*;
-
 import java.io.*;
-import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
 
@@ -18,10 +13,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private void save() {
-        String[] header = { "id", "type", "title", "status", "description", "epic" };
-        try (CSVWriter writer = new CSVWriter(new FileWriter(file))) {
-            writer.writeNext(header);
-            for (Task task : tasks.values())  writer.writeNext(task.toCSVArray());
+        String header = "\"id\",\"type\",\"title\",\"status\",\"description\",\"epic\"";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            writer.write(header + "\n");
+            for (Task task : tasks.values())  writer.write(task.toCSVLine() + "\n");
         } catch (IOException e) {
             throw new ManagerSaveException("File access error: can't write to " + file.toString());
         }
@@ -39,12 +34,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         taskFactory.clear();
         historyManager.clear();
         tasks.clear();
-
-        try (CSVReader reader = new CSVReader(new FileReader(file))) {
-            List<String[]> lines = reader.readAll();
-            if (!lines.isEmpty())  lines.removeFirst();
-            for (String[] line : lines) {
-                Task task = taskFactory.fromCSVArray(line);
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            reader.readLine();                        // header
+            while (reader.ready()) {
+                String line = reader.readLine();
+                Task task = taskFactory.fromCSVLine(line);
                 tasks.put(task.getId(), task);
                 if (task instanceof Subtask subtask) {
                     Task subtaskEpic = tasks.get(subtask.getEpicId());
@@ -53,13 +47,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     }
                 }
             }
-
         } catch (IOException e) {
             throw new ManagerLoadException("IO Error reading file " + file.toString());
-        } catch (WrongCSVArrayException e) {
-            throw new ManagerLoadException("Wrong CSV line: " + e.getMessage());
-        } catch (CsvException e) {
-            throw new ManagerLoadException("Wrong CSV file. Incorrect formatting.");
+        } catch (WrongCSVLineException e) {
+            throw new ManagerLoadException("Incorrect CSV file: " + e.getMessage());
         }
     }
 
