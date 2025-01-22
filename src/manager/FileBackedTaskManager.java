@@ -39,6 +39,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public void readFromCSV() {
         taskFactory.clear();
         historyManager.clear();
+        tasks.clear();
 
         try ( CSVReader reader = new CSVReader(new FileReader(file)) ) {
             List<String[]> lines = reader.readAll();
