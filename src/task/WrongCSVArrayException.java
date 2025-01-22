@@ -1,6 +1,6 @@
 package task;
 
-public class WrongCSVArrayException extends Exception{
+public class WrongCSVArrayException extends Exception {
 
     /**
      * Constructs a new exception with {@code null} as its detail message.
