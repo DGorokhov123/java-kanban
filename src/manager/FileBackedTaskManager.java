@@ -38,6 +38,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             reader.readLine();                        // header
             while (reader.ready()) {
                 String line = reader.readLine();
+                if (line.isBlank()) continue;
                 Task task = taskFactory.fromCSVLine(line);
                 tasks.put(task.getId(), task);
                 if (task instanceof Subtask subtask) {
