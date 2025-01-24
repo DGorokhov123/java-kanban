@@ -2,20 +2,66 @@ import com.google.gson.Gson;
 import manager.*;
 import task.*;
 
+import java.io.File;
+import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("######################################################################################");
+            System.out.println("Введите число и выберите демо:");
+            System.out.println("1 - InMemoryTaskManager: add(), update(), remove(), removeAll + история");
+            System.out.println("2 - InMemoryHistoryManager: поведение истории с большим объемом случайных операций");
+            System.out.println("3 - FileBackedTaskManager: генерируем данные и сохраняем в файл");
+            System.out.println("4 - FileBackedTaskManager: загрузка из файла, добавление строки и сохранение в файл");
+            System.out.println("0 - Выход");
+            int choice;
+            try {
+                choice = scanner.nextInt();
+            } catch (NoSuchElementException | IllegalStateException e) {
+                choice = -1;
+                scanner.nextLine();
+            }
+            if      (choice == 0)  return;
+            else if (choice == 1)  inMemoryDemo();
+            else if (choice == 2)  continuousDemo();
+            else if (choice == 3)  fileBackedMakeFile();
+            else if (choice == 4)  fileBackedDemo();
+            else System.out.println("Вы ввели что-то не то, давайте еще разок!");
+        }
+    }
+
+    private static void inMemoryDemo() {
         TaskFactory taskFactory = Managers.getDefaultFactory();
         HistoryManager historyManager = Managers.getDefaultHistory();
         TaskManager tMan = Managers.getDefault(taskFactory, historyManager);
-
-        //optionalDemo(tMan);
-        continuousDemo(tMan);
+        optionalDemo(tMan);
+        removeDemo(tMan);   // strictly after optionalDemo
     }
 
-    private static void continuousDemo(TaskManager tMan) {
+    private static void fileBackedDemo() {
+        TaskFactory taskFactory = Managers.getDefaultFactory();
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        TaskManager tMan = Managers.loadFromFile(taskFactory, historyManager, new File("file1.csv"));
+        tMan.add(new Task("Добавим задачу", "и запишем в файл!", TaskStatus.NEW));
+        showAll(tMan);
+    }
+
+    private static void fileBackedMakeFile() {
+        TaskFactory taskFactory = Managers.getDefaultFactory();
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        TaskManager tMan = new FileBackedTaskManager(taskFactory, historyManager, new File("file1.csv"));
+        optionalDemo(tMan);
+    }
+
+    private static void continuousDemo() {
+        TaskFactory taskFactory = Managers.getDefaultFactory();
+        HistoryManager historyManager = Managers.getDefaultHistory();
+        TaskManager tMan = Managers.getDefault(taskFactory, historyManager);
         Random rnd = new Random();
         int choice = 0;
         int lastID = 0;
@@ -72,8 +118,8 @@ public class Main {
                 "\"title\":\"Наладить жизнь в России\",\"description\":\"\",\"status\":\"NEW\"}", Epic.class));
         tMan.add(gson.fromJson("{\"epicId\":" + e1.getId() + ",\"id\":0,\"title\":\"Запретить все плохое\"," +
                 "\"description\":\"Составить реестр плохого, принять законы\",\"status\":\"DONE\"}", Subtask.class));
-        tMan.add(gson.fromJson("{\"epicId\":" + e1.getId() + ",\"id\":0,\"title\":\"Избрать Трампа\"," +
-                "\"description\":\"Сделать Дони президентом США\",\"status\":\"DONE\"}", Subtask.class));
+        tMan.add(gson.fromJson("{\"epicId\":" + e1.getId() + ",\"id\":0,\"title\":\"Увеличить рождаемость\"," +
+                "\"description\":\"вернуть в страну Павла Дурова\",\"status\":\"DONE\"}", Subtask.class));
         tMan.add(gson.fromJson("{\"epicId\":" + e1.getId() + ",\"id\":0,\"title\":\"Укрепить рубль\"," +
                 "\"description\":\"и уменьшить ключевую ставку\",\"status\":\"NEW\"}", Subtask.class));
 
@@ -92,21 +138,13 @@ public class Main {
         tMan.update(new Epic(e3.getId(), "Стать крутым прогером", "план надежный как швейцарские часы"));
         tMan.update(new Subtask(e3s1.getId(), "Закончить курсы", "например Яндекс Практикум", TaskStatus.IN_PROGRESS));
         tMan.update(new Subtask(e3s2.getId(), "Стать джуном", "найти любую работу", TaskStatus.NEW));
-        tMan.update(new Subtask(e3s3.getId(), "Стать мидлом", "найти работу за деньги", TaskStatus.NEW));
+        tMan.update(new Subtask(e3s3.getId(), "Стать мидлом", "найти работу за хорошие деньги", TaskStatus.NEW));
         tMan.removeById(e3s4.getId());
         tMan.update(gson.fromJson("{\"epicId\":0,\"id\":" + e3s5.getId() + ",\"title\":\"Стать сеньором\"," +
-                "\"description\":\"и уехать на Бали\",\"status\":\"NEW\"}", Subtask.class));
+                "\"description\":\"и уехать в долину\",\"status\":\"NEW\"}", Subtask.class));
 
 
-        // Show information
-        System.out.println("----------------------------ВСЕ ПРОСТЫЕ ТАСКИ - getTasks() ---------------------------");
-        for (Task task : tMan.getTasks())  System.out.println(task);
-
-        System.out.println("----------------------------ВСЕ ЭПИКИ С САБТАСКАМИ - getEpics() + getSubTasks()---------");
-        for (Epic epic : tMan.getEpics()) {
-            System.out.println(epic);
-            for (Subtask subtask : tMan.getSubTasks(epic.getId()))  System.out.println("\t" + subtask.toString());
-        }
+        showAll(tMan);
 
         System.out.println("----------------------------САБТАСК НЕСУЩЕСТВУЮЩЕГО ЭПИКА - getSubTasks(444)---------");
         for (Subtask subtask : tMan.getSubTasks(444))  System.out.println("\t" + subtask.toString());
@@ -125,6 +163,23 @@ public class Main {
         int historyCounter = 1;
         for (Task task : tMan.getHistory()) System.out.println(historyCounter++ + ". " + task.toString());
 
+    }
+
+    private static void showAll(TaskManager tMan) {
+        // Show information
+        System.out.println("----------------------------ВСЕ ПРОСТЫЕ ТАСКИ - getTasks() ---------------------------");
+        for (Task task : tMan.getTasks())  System.out.println(task);
+
+        System.out.println("----------------------------ВСЕ ЭПИКИ С САБТАСКАМИ - getEpics() + getSubTasks()---------");
+        for (Epic epic : tMan.getEpics()) {
+            System.out.println(epic);
+            for (Subtask subtask : tMan.getSubTasks(epic.getId()))  System.out.println("\t" + subtask.toString());
+        }
+    }
+
+
+    private static void removeDemo(TaskManager tMan) {
+        int historyCounter;
         System.out.println("---------------------ВСЕ ПРОСТЫЕ ТАСКИ - после removeAllTasks() ----------------------");
         tMan.removeAllTasks();
         for (Task task : tMan.getTasks()) System.out.println(task);
@@ -151,6 +206,5 @@ public class Main {
         System.out.println("---------------------ИСТОРИЯ ПРОСМОТРОВ - после removeAllEpics() ----------------------");
         historyCounter = 1;
         for (Task task : tMan.getHistory()) System.out.println(historyCounter++ + ". " + task.toString());
-
     }
 }

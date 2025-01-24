@@ -1,0 +1,4 @@
+"id","type","title","status","description","epic"
+"1","TASK","Task","NEW","task"
+"2","EPIC","Epic","IN_PROGRESS","epic"
+"3","SUBTASK","Subtask","DONE","subtask","2"

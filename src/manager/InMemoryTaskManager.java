@@ -10,10 +10,9 @@ import java.util.List;
  */
 public class InMemoryTaskManager implements TaskManager {
 
-    private final LinkedHashMap<Integer, Task> tasks = new LinkedHashMap<>();
-    // так не пойдем, ставьте понятные название переменных: taskFactory, historyManager
-    private final TaskFactory taskFactory;
-    private final HistoryManager historyManager;
+    protected final LinkedHashMap<Integer, Task> tasks = new LinkedHashMap<>();
+    protected final TaskFactory taskFactory;
+    protected final HistoryManager historyManager;
 
     public InMemoryTaskManager(TaskFactory taskFactory, HistoryManager historyManager) {
         if (taskFactory == null) throw new IllegalArgumentException("Parameter 'taskFactory' cannot be null");

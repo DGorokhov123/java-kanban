@@ -29,4 +29,10 @@ public interface HistoryManager {
      */
     boolean remove(int id);
 
-}
+    /**
+     * Resets history to original state
+     */
+    void clear();
+
+
+    }

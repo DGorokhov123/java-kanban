@@ -89,6 +89,20 @@ public class Epic extends Task {
     }
 
     /**
+     * Represents the Epic as a string to write to CSV file.
+     */
+    @Override
+    public String toCSVLine() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\"").append(id).append("\",");
+        builder.append("\"").append(TaskType.EPIC.toString()).append("\",");
+        builder.append("\"").append(title).append("\",");
+        builder.append("\"").append(status.toString()).append("\",");
+        builder.append("\"").append(description).append("\"");
+        return builder.toString();
+    }
+
+    /**
      * Represents task as string to print. Usable with System.out.println()
      */
     @Override

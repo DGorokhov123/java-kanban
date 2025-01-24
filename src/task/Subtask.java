@@ -32,6 +32,18 @@ public class Subtask extends Task {
         this.epicId = epicId;
     }
 
+    /**
+     * Loading constructor makes object for loading from CSV file
+     * @param id
+     * @param title
+     * @param description
+     * @param status
+     * @param epicId
+     */
+    public Subtask(int id, String title, String description, TaskStatus status, int epicId) {
+        super(id, title, description, status);
+        this.epicId = epicId;
+    }
 
     /**
      * This method (and field epicId) is used just for detecting Epic to link.
@@ -68,6 +80,22 @@ public class Subtask extends Task {
     void setStatus(TaskStatus status) {
         this.status = status;
         if (epic != null)  epic.setStatus(null);
+    }
+
+    /**
+     * Represents the Subtask as a string to write to CSV file.
+     */
+    @Override
+    public String toCSVLine() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\"").append(id).append("\",");
+        builder.append("\"").append(TaskType.SUBTASK.toString()).append("\",");
+        builder.append("\"").append(title).append("\",");
+        builder.append("\"").append(status.toString()).append("\",");
+        builder.append("\"").append(description).append("\",");
+        String eId = (epic == null) ? "" : Integer.toString(epic.getId());
+        builder.append("\"").append(eId).append("\"");
+        return builder.toString();
     }
 
     /**
