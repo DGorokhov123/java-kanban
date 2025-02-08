@@ -39,14 +39,14 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getTasks() {
         return tasks.values().stream()
-                .filter( t -> !(t instanceof Epic) && !(t instanceof Subtask) )
+                .filter(t -> !(t instanceof Epic) && !(t instanceof Subtask))
                 .toList();
     }
 
     @Override
     public List<Epic> getEpics() {
         return tasks.values().stream()
-                .filter( t -> (t instanceof Epic) )
+                .filter(t -> (t instanceof Epic))
                 .map(t -> (Epic) t)
                 .toList();
     }
@@ -54,7 +54,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Subtask> getSubTasks(int epicId) {
         return tasks.values().stream()
-                .filter( t -> (t instanceof Subtask) )
+                .filter(t -> (t instanceof Subtask))
                 .map(t -> (Subtask) t)
                 .filter(s -> s.getEpic() != null)
                 .filter(s -> s.getEpic().getId() == epicId)
