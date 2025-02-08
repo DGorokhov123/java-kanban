@@ -1,5 +1,8 @@
 package task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 /**
  * Subtask class. Extends Task class. Subtask of Epic task.
  */
@@ -8,47 +11,13 @@ public class Subtask extends Task {
     private Epic epic;   // Epic task that this subtask belongs to
     private final int epicId;  // Special field used for linking
 
-    /**
-     * Updating constructor makes object for update method.
-     * @param id
-     * @param title
-     * @param description
-     * @param status
-     */
-    public Subtask(int id, String title, String description, TaskStatus status) {
-        super(id, title, description, status);
-        epicId = 0;
-    }
-
-    /**
-     * Adding constructor makes object for add method.
-     * @param title
-     * @param description
-     * @param status
-     * @param epicId
-     */
-    public Subtask(String title, String description, TaskStatus status, int epicId) {
-        super(title, description, status);
-        this.epicId = epicId;
-    }
-
-    /**
-     * Loading constructor makes object for loading from CSV file
-     * @param id
-     * @param title
-     * @param description
-     * @param status
-     * @param epicId
-     */
-    public Subtask(int id, String title, String description, TaskStatus status, int epicId) {
-        super(id, title, description, status);
+    public Subtask(int id, int epicId, String title, String description, TaskStatus status, LocalDateTime startTime, Duration duration) {
+        super(id, title, description, status, startTime, duration);
         this.epicId = epicId;
     }
 
     /**
      * This method (and field epicId) is used just for detecting Epic to link.
-     * Only incoming objects contain this field. All factory-generated objects have epicId = 0.<br>
-     * This method is never used in task manager logic except linking Subtask and Epic in add method.
      * @return {@code int} ID of Epic to link Subtask.
      */
     public int getEpicId() {
@@ -65,7 +34,6 @@ public class Subtask extends Task {
 
     /**
      * Makes reference between this Subtask and Epic object that this Subtask belongs to.
-     * Package-private method. Is used only in Epic class.
      * @param epic Epic object to link
      */
     void setEpic(Epic epic) {
@@ -73,13 +41,17 @@ public class Subtask extends Task {
     }
 
     /**
-     * Sets status of this subtask. Updates status of owner Epic.
-     * @param status new {@code TaskStatus} status to update
+     * Updates this subtask using data from received subtask.
+     * @param task new instance of Task object, containing new data
      */
     @Override
-    void setStatus(TaskStatus status) {
-        this.status = status;
-        if (epic != null)  epic.setStatus(null);
+    public boolean update(Task task) {
+        super.update(task);
+        if (epic != null) {
+            epic.calculateStatus();
+            epic.calculateTime();
+        }
+        return true;
     }
 
     /**
@@ -93,8 +65,15 @@ public class Subtask extends Task {
         builder.append("\"").append(title).append("\",");
         builder.append("\"").append(status.toString()).append("\",");
         builder.append("\"").append(description).append("\",");
-        String eId = (epic == null) ? "" : Integer.toString(epic.getId());
-        builder.append("\"").append(eId).append("\"");
+        builder.append("\"");
+        if (startTime != null)  builder.append(startTime.format(DATE_TIME_FORMATTER));
+        builder.append("\",");
+        builder.append("\"");
+        if (duration != null)  builder.append(duration.toSeconds());
+        builder.append("\",");
+        builder.append("\"");
+        if (epic != null)  builder.append(epic.getId());
+        builder.append("\"");
         return builder.toString();
     }
 
@@ -104,8 +83,10 @@ public class Subtask extends Task {
     @Override
     public String toString() {
         String eId = (epic == null) ? "null" : Integer.toString(epic.getId());
+        String start = (startTime != null) ? startTime.format(DATE_TIME_FORMATTER) : "null";
+        String end = (getEndTime() != null) ? getEndTime().format(DATE_TIME_FORMATTER) : "null";
         return "Subtask #" + id + ", epic #" + eId + "\t[" + status + "]\t"
-                + title + " (" + description + ")";
+                + title + " (" + description + ") {" + start + " --> " + end + "}";
     }
 
 
