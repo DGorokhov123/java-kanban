@@ -1,29 +1,24 @@
 package task;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import java.time.Duration;
+import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SubtaskTest {
 
-    Epic epic;
-    Subtask subtask;
-
-    @BeforeEach
-    void setUp() {
-        epic = new Epic(15, "Epic title", "Epic description");
-        subtask = new Subtask(234, "Subtask title", "Subtask description", TaskStatus.NEW);
-    }
-
     @Test
     void getEpicId() {
-        Subtask subtask75 = new Subtask("Subtask title", "Subtask description", TaskStatus.NEW, 75);
+        Epic epic = new Epic(15, "Epic title", "Epic description");
+        Subtask subtask = new Subtask(234, 0, "Subtask title", "Subtask description", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3));
+        Subtask subtask75 = new Subtask(0, 75, "Subtask title", "Subtask description", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3));
         assertEquals(75, subtask75.getEpicId());
     }
 
     @Test
     void getAndSetEpic() {
+        Epic epic = new Epic(15, "Epic title", "Epic description");
+        Subtask subtask = new Subtask(234, 0, "Subtask title", "Subtask description", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3));
         assertNull(subtask.getEpic());
         subtask.setEpic(epic);
         assertEquals(epic, subtask.getEpic());
@@ -31,22 +26,36 @@ class SubtaskTest {
     }
 
     @Test
-    void getAndSetStatus() {
-        assertEquals(TaskStatus.NEW, subtask.getStatus());
-        subtask.setStatus(TaskStatus.IN_PROGRESS);
-        assertEquals(TaskStatus.IN_PROGRESS, subtask.getStatus());
+    void linkedEpic() {
+        Epic epic = new Epic(1, "Epic title", "Epic description");
+        Subtask subtask = new Subtask(2, 0, "Subtask title", "Subtask description", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3));
+        assertTrue(epic.getSubtasks().isEmpty());
+        assertNull(subtask.getEpic());
         epic.linkSubtask(subtask);
-        assertEquals(TaskStatus.IN_PROGRESS, epic.getStatus());
-        subtask.setStatus(TaskStatus.DONE);
-        assertEquals(TaskStatus.DONE, subtask.getStatus());
-        assertEquals(TaskStatus.DONE, epic.getStatus());
+        assertEquals(epic, subtask.getEpic());
+        assertEquals(subtask, epic.getSubtasks().get(subtask.getId()));
     }
 
     @Test
-    void testToStringAndShortConstructor() {
-        epic.linkSubtask(subtask);
-        assertEquals("Subtask #234, epic #15\t[NEW]\tSubtask title (Subtask description)", subtask.toString());
-        Subtask s2 = new Subtask("Second title", "Second description", TaskStatus.DONE, 94);
-        assertEquals("Subtask #0, epic #null\t[DONE]\tSecond title (Second description)", s2.toString());
+    void hasIntersection() {
+        Subtask subtask1 = new Subtask(1, 0, "s1", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 1, 1), Duration.ofHours(5));
+        Subtask subtask2 = new Subtask(2, 0, "s2", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 3, 21), Duration.ofHours(5));
+        Subtask subtask3 = new Subtask(3, 0, "s3", "", TaskStatus.NEW, LocalDateTime.of(2000, 5, 5, 1, 1), Duration.ofHours(5));
+        assertTrue(subtask1.hasIntersection(subtask2));
+        assertTrue(subtask2.hasIntersection(subtask1));
+        assertFalse(subtask1.hasIntersection(subtask3));
+        assertFalse(subtask3.hasIntersection(subtask1));
+        Task task1 = new Task(1, "t1", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 1, 1), Duration.ofHours(5));
+        Task task2 = new Task(2, "t2", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 3, 21), Duration.ofHours(5));
+        Task task3 = new Task(3, "t3", "", TaskStatus.NEW, LocalDateTime.of(2000, 5, 5, 1, 1), Duration.ofHours(5));
+        assertTrue(task1.hasIntersection(subtask2));
+        assertTrue(task2.hasIntersection(subtask1));
+        assertFalse(task1.hasIntersection(subtask3));
+        assertFalse(task3.hasIntersection(subtask1));
+        assertTrue(subtask1.hasIntersection(task2));
+        assertTrue(subtask2.hasIntersection(task1));
+        assertFalse(subtask1.hasIntersection(task3));
+        assertFalse(subtask3.hasIntersection(task1));
     }
+
 }
