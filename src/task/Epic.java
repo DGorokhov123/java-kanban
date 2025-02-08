@@ -47,8 +47,8 @@ public class Epic extends Task {
         LocalDateTime firstTime = null;
         LocalDateTime lastTime = null;
         for (Subtask subtask : subtasks.values()) {
-            if ( subtask.getStartTime() != null && ( firstTime == null || subtask.getStartTime().isBefore(firstTime) ) )  firstTime = subtask.getStartTime();
-            if ( subtask.getEndTime() != null && ( lastTime == null || subtask.getEndTime().isAfter(lastTime) ) )  lastTime = subtask.getEndTime();
+            if (subtask.getStartTime() != null && (firstTime == null || subtask.getStartTime().isBefore(firstTime))) firstTime = subtask.getStartTime();
+            if (subtask.getEndTime() != null && (lastTime == null || subtask.getEndTime().isAfter(lastTime))) lastTime = subtask.getEndTime();
         }
         startTime = firstTime;
         endTime = lastTime;
