@@ -33,9 +33,14 @@ public interface TaskManager {
      * Returns a list of all subtasks (Subtask objects) of the specified epic.
      * @param epicId ID of the epic.
      * @return {@code ArrayList<Subtask>} list of existing objects,
-     * or {@code null} if list is empty or specified epic doesn't exist.
      */
     List<Subtask> getSubTasks(int epicId);
+
+    /**
+     * Returns a list of all tasks and subtasks ordered by start time
+     * @return {@code List<Task>} list of existing objects,
+     */
+    List<Task> getPrioritizedTasks();
 
     /**
      * Returns list of last viewed tasks
@@ -100,5 +105,9 @@ public interface TaskManager {
      */
     void removeAllEpics();
 
+
+    //#################################### Date Time methods ####################################
+
+    boolean hasIntersections(Task task);
 
 }
