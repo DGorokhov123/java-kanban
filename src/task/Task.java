@@ -82,17 +82,6 @@ public class Task {
     }
 
     /**
-     * Checks time intersections with other task
-     * @param task
-     * @return {@code boolean}
-     */
-    public boolean hasIntersection(Task task) {
-        if (task == null || task.startTime == null || this.startTime == null) return false;
-        return this.startTime.isBefore(task.getEndTime()) &&
-                task.startTime.isBefore(this.getEndTime());
-    }
-
-    /**
      * Represents the task as a string to write to CSV file.
      */
     public String toCSVLine() {

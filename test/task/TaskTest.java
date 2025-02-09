@@ -51,15 +51,4 @@ class TaskTest {
         assertEquals(123, task.hashCode());
     }
 
-    @Test
-    void hasIntersection() {
-        Task task1 = new Task(1, "t1", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 1, 1), Duration.ofHours(5));
-        Task task2 = new Task(2, "t2", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 3, 21), Duration.ofHours(5));
-        Task task3 = new Task(3, "t3", "", TaskStatus.NEW, LocalDateTime.of(2000, 5, 5, 1, 1), Duration.ofHours(5));
-        assertTrue(task1.hasIntersection(task2));
-        assertTrue(task2.hasIntersection(task1));
-        assertFalse(task1.hasIntersection(task3));
-        assertFalse(task3.hasIntersection(task1));
-    }
-
 }

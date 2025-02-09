@@ -56,20 +56,4 @@ class EpicTest {
         assertEquals(TaskStatus.IN_PROGRESS, epic3.getStatus());
     }
 
-    @Test
-    void hasIntersection() {
-        Epic epic = new Epic(1, "e1", "");
-        Subtask subtask2 = new Subtask(2, 0, "s2", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 10, 0), Duration.ofHours(5));
-        Subtask subtask3 = new Subtask(3, 0, "s3", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 19, 0), Duration.ofHours(5));
-        epic.linkSubtask(subtask2);
-        epic.linkSubtask(subtask3);
-        assertTrue(epic.hasIntersection(subtask2));
-        assertTrue(epic.hasIntersection(subtask3));
-        Task task4 = new Task(4, "t4", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 8, 0), Duration.ofHours(5));
-        Task task5 = new Task(5, "t5", "", TaskStatus.NEW, LocalDateTime.of(2000, 5, 5, 1, 1), Duration.ofHours(5));
-        assertTrue(epic.hasIntersection(task4));
-        assertFalse(epic.hasIntersection(task5));
-    }
-
-
 }
