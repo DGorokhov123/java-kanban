@@ -56,7 +56,7 @@ public interface TaskManager {
      * @param task Task data object to add to manager
      * @return {@code Task} new generated task, or {@code null} in case of wrong parameter
      */
-    Task add(Task task);
+    Task add(Task task) throws TaskIntersectionException;
 
     /**
      * Adds a new Epic
@@ -70,14 +70,14 @@ public interface TaskManager {
      * @param subtask Subtask data object to add to manager
      * @return {@code Subtask} new generated subtask, or {@code null} in case of wrong parameter
      */
-    Subtask add(Subtask subtask);
+    Subtask add(Subtask subtask) throws TaskIntersectionException;
 
     /**
      * Updates an existing Task (or its child Epic / Subtask).
      * @param task New instance of extended Task type object, containing new data for existing entry.
      * @return {@code Task} updated object, or {@code null} in case of wrong ID
      */
-    Task update(Task task);
+    Task update(Task task) throws TaskIntersectionException;
 
 
     //#################################### Remove methods. ####################################
@@ -104,10 +104,5 @@ public interface TaskManager {
      * Removes all epics (Epic objects) and all subtasks (Subtask objects).
      */
     void removeAllEpics();
-
-
-    //#################################### Date Time methods ####################################
-
-    boolean hasIntersections(Task task);
 
 }
