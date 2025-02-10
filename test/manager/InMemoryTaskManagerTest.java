@@ -3,6 +3,9 @@ package manager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import task.*;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,36 +25,39 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     }
 
     @Test
-    void continuousDemo() {
+    void continuousHistoryOps() {
         TaskManager tm = new InMemoryTaskManager(new TaskFactory(), new InMemoryHistoryManager(10));
         Random rnd = new Random();
         int choice = 0;
         int lastID = 0;
         int lastEpicID = 0;
-
-        for (int i = 0; i < 1000; i++) {
-            choice = rnd.nextInt(8);
-            if (choice == 0) {
-                lastID = tm.add(new Task(0, "t", "", TaskStatus.NEW, null, null)).getId();
-            } else if (choice == 1) {
-                lastID = tm.add(new Epic(0, "e", "")).getId();
-                lastEpicID = lastID;
-            } else if (choice <= 3 && lastEpicID > 0) {
-                lastID = tm.add(new Subtask(0, lastEpicID, "s", "", TaskStatus.NEW, null, null)).getId();
-            } else if (choice <= 5 && lastID > 0) {
-                int rndRes = rnd.nextInt(lastID);
-                Task tsk = tm.getTaskById(rndRes);
-                if (tsk instanceof Epic) {
-                    tm.update(new Epic(rndRes, "Epic", String.valueOf(i)));
-                } else if (tsk instanceof Subtask) {
-                    tm.update(new Subtask(rndRes, 0, "Subtask", String.valueOf(i), TaskStatus.DONE, null, null));
+        try {
+            for (int i = 0; i < 1000; i++) {
+                choice = rnd.nextInt(8);
+                if (choice == 0) {
+                    lastID = tm.add(new Task(0, "t", "", TaskStatus.NEW, null, null)).getId();
+                } else if (choice == 1) {
+                    lastID = tm.add(new Epic(0, "e", "")).getId();
+                    lastEpicID = lastID;
+                } else if (choice <= 3 && lastEpicID > 0) {
+                    lastID = tm.add(new Subtask(0, lastEpicID, "s", "", TaskStatus.NEW, null, null)).getId();
+                } else if (choice <= 5 && lastID > 0) {
+                    int rndRes = rnd.nextInt(lastID);
+                    Task tsk = tm.getTaskById(rndRes);
+                    if (tsk instanceof Epic) {
+                        tm.update(new Epic(rndRes, "Epic", String.valueOf(i)));
+                    } else if (tsk instanceof Subtask) {
+                        tm.update(new Subtask(rndRes, 0, "Subtask", String.valueOf(i), TaskStatus.DONE, null, null));
+                    } else {
+                        tm.update(new Task(rndRes, "Task", String.valueOf(i), TaskStatus.DONE, null, null));
+                    }
                 } else {
-                    tm.update(new Task(rndRes, "Task", String.valueOf(i), TaskStatus.DONE, null, null));
+                    int rndRes = rnd.nextInt(lastID + 1);
+                    if (rndRes != lastEpicID) tm.removeById(rndRes);
                 }
-            } else {
-                int rndRes = rnd.nextInt(lastID + 1);
-                if (rndRes != lastEpicID) tm.removeById(rndRes);
             }
+        } catch (TaskIntersectionException e) {
+            assertNull(e);
         }
         System.out.println("======================== Корректность истории ========================");
         int historyCounter = 1;
@@ -178,6 +184,20 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         tm.removeAllEpics();
         assertTrue(tm.getEpics().isEmpty());
         assertTrue(tm.getHistory().isEmpty());
+    }
+
+    @Test
+    void taskIntersections() {
+        try {
+            Task newtask = new Task(0, "new", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 1, 1), Duration.ofHours(5));
+            Task task1 = taskManager.add(new Task(0, "1", "", TaskStatus.NEW, LocalDateTime.of(2000, 5, 5, 1, 1), Duration.ofHours(5)));
+            assertTrue(taskManager.findIntersections(newtask).isEmpty());
+            Task task2 = taskManager.add(new Task(0, "2", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 3, 21), Duration.ofHours(5)));
+            assertFalse(taskManager.findIntersections(newtask).isEmpty());
+            assertTrue(taskManager.findIntersections(task1).isEmpty());
+        } catch (TaskIntersectionException e) {
+            assertNull(e);
+        }
     }
 
 }
