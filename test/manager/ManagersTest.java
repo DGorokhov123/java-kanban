@@ -6,9 +6,6 @@ import task.Task;
 import task.TaskFactory;
 import task.TaskStatus;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class ManagersTest {
