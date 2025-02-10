@@ -30,15 +30,15 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     }
 
     @Test
-    void addUpdateRemove() throws IOException {
+    void addUpdateRemove() throws IOException, TaskIntersectionException {
         File file = File.createTempFile("tman", ".tmp");
 
         // ############################## ADD ##############################
 
         TaskManager tMan = FileBackedTaskManager.loadFromFile(file);
-        tMan.add(new Task(0, "t1", "", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
+        tMan.add(new Task(0, "t1", "", TaskStatus.NEW, null, null));
         Epic e1 = tMan.add(new Epic(0, "e1", ""));
-        tMan.add(new Subtask(0, e1.getId(), "s1", "", TaskStatus.DONE, LocalDateTime.now().minusHours(1), Duration.ofHours(3)));
+        tMan.add(new Subtask(0, e1.getId(), "s1", "", TaskStatus.DONE, null, null));
 
         assertEquals("t1", tMan.getTaskById(1).getTitle());
         assertEquals("e1", tMan.getTaskById(2).getTitle());
@@ -52,9 +52,9 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
         assertEquals("s1", tMan.getTaskById(3).getTitle());
         assertEquals("e1", ((Subtask) tMan.getTaskById(3)).getEpic().getTitle()  );
 
-        tMan.add(new Task(0, "t2", "", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
+        tMan.add(new Task(0, "t2", "", TaskStatus.NEW, null, null));
         Epic e2 = tMan.add(new Epic(0, "e2", ""));
-        tMan.add(new Subtask(0, e2.getId(), "s2", "", TaskStatus.DONE, LocalDateTime.now(), Duration.ofHours(3)));
+        tMan.add(new Subtask(0, e2.getId(), "s2", "", TaskStatus.DONE, null, null));
 
         assertEquals("t2", tMan.getTaskById(4).getTitle());
         assertEquals("e2", tMan.getTaskById(5).getTitle());
@@ -70,9 +70,9 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
         // ############################## UPDATE ##############################
 
-        tMan.update(new Task(4, "ut2", "", TaskStatus.IN_PROGRESS, LocalDateTime.now(), Duration.ofHours(3)));
+        tMan.update(new Task(4, "ut2", "", TaskStatus.IN_PROGRESS, null, null));
         tMan.update(new Epic(5, "ue2", ""));
-        tMan.update(new Subtask(6, 0, "us2", "", TaskStatus.DONE, LocalDateTime.now(), Duration.ofHours(3)));
+        tMan.update(new Subtask(6, 0, "us2", "", TaskStatus.DONE, null, null));
 
         assertEquals("ut2", tMan.getTaskById(4).getTitle());
         assertEquals("ue2", tMan.getTaskById(5).getTitle());
@@ -136,21 +136,20 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     }
 
     @Test
-    void fileBackedMakeFile() {
+    void fileBackedMakeFile() throws TaskIntersectionException {
         FileBackedTaskManager tm = new FileBackedTaskManager(new TaskFactory(), new InMemoryHistoryManager(10), new File("file1.csv"));
 
         tm.add(new Task(0, "Праздновать новый год", "всю ночь", TaskStatus.DONE, LocalDateTime.of(2024,12,31,21,0), Duration.ofHours(12)));
-        tm.add(new Task(0, "Отоспаться после празднования", "", TaskStatus.NEW, LocalDateTime.of(2025,1,1,0,0), Duration.ofHours(12)));
+        tm.add(new Task(0, "Отоспаться после празднования", "", TaskStatus.NEW, LocalDateTime.of(2025,1,1,9,0), Duration.ofHours(12)));
         tm.add(new Task(0, "Похудеть и накачаться", "", TaskStatus.NEW, null, null));
         tm.add(new Task(0, "Неплохо бы еще попраздновать", "", TaskStatus.NEW, LocalDateTime.of(2025,1,3,21,0), Duration.ofHours(12)));
-        tm.add(new Task(0, "И уже окончательно отоспаться", "", TaskStatus.NEW, LocalDateTime.of(2025,1,4,0,0), Duration.ofHours(12)));
+        tm.add(new Task(0, "И уже окончательно отоспаться", "", TaskStatus.NEW, LocalDateTime.of(2025,1,4,9,0), Duration.ofHours(12)));
         tm.add(new Task(0, "Найти новую работу", "", TaskStatus.NEW, null, null));
         Epic e1 = tm.add(new Epic(0, "Начать новую жизнь", "с нового года"));
-        tm.add(new Subtask(0, e1.getId(), "Встать в 7 утра", "сделать зарядку", TaskStatus.NEW, LocalDateTime.of(2025,1,1,7,0), Duration.ofHours(1)));
-        tm.add(new Subtask(0, e1.getId(), "программировать", "крутейший пет-проект", TaskStatus.NEW, LocalDateTime.of(2025, 1, 1, 8 ,0), Duration.ofHours(8)));
-        tm.add(new Subtask(0, e1.getId(), "сходить погулять", "с детьми", TaskStatus.NEW, LocalDateTime.of(2025, 1, 1, 15 ,0), Duration.ofHours(2)));
-        tm.add(new Task(0, "Выпьем пивка", "под киношечку", TaskStatus.NEW, LocalDateTime.of(2025,1,1,19,0), Duration.ofHours(2)));
-        tm.add(new Task(0, "Выпьем пивка", "под сериальчик", TaskStatus.NEW, LocalDateTime.of(2025,1,2,19,0), Duration.ofHours(2)));
+        tm.add(new Subtask(0, e1.getId(), "Встать в 7 утра", "сделать зарядку", TaskStatus.NEW, LocalDateTime.of(2025,1,2,7,0), Duration.ofHours(1)));
+        tm.add(new Subtask(0, e1.getId(), "программировать", "крутейший пет-проект", TaskStatus.NEW, LocalDateTime.of(2025, 1, 2, 8 ,0), Duration.ofHours(6)));
+        tm.add(new Subtask(0, e1.getId(), "сходить погулять", "с детьми", TaskStatus.NEW, LocalDateTime.of(2025, 1, 2, 15 ,0), Duration.ofHours(2)));
+        tm.add(new Task(0, "Выпьем пивка", "под киношечку", TaskStatus.NEW, LocalDateTime.of(2025,1,2,19,0), Duration.ofHours(2)));
 
         FileBackedTaskManager tm2 = Managers.loadFromFile(new TaskFactory(), new InMemoryHistoryManager(10), new File("file1.csv"));
         List<Task> tm1Tasks = tm.getAllRecords();

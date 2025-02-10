@@ -18,9 +18,9 @@ class ManagersTest {
     }
 
     @Test
-    void getDefault() {
+    void getDefault() throws TaskIntersectionException {
         TaskManager tm = Managers.getDefault();
-        tm.add(new Task(0, "task 1", "1", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
+        tm.add(new Task(0, "task 1", "1", TaskStatus.NEW, null, null));
         assertEquals("task 1", tm.getTaskById(1).getTitle());
         assertEquals("task 1", tm.getHistory().getLast().getTitle());
         for (int i = 0; i < 25; i++) tm.getTaskById(1);
@@ -28,15 +28,15 @@ class ManagersTest {
     }
 
     @Test
-    void getDefaultParams() {
+    void getDefaultParams() throws TaskIntersectionException {
         TaskFactory tf = Managers.getDefaultFactory();
         HistoryManager hm = Managers.getDefaultHistory(3);
         TaskManager tm = Managers.getDefault(tf, hm);
-        tm.add(new Task(0, "task 1", "1", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
-        tm.add(new Task(0, "task 2", "2", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
-        tm.add(new Task(0, "task 3", "3", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
-        tm.add(new Task(0, "task 4", "4", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
-        tm.add(new Task(0, "task 5", "5", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
+        tm.add(new Task(0, "task 1", "1", TaskStatus.NEW, null, null));
+        tm.add(new Task(0, "task 2", "2", TaskStatus.NEW, null, null));
+        tm.add(new Task(0, "task 3", "3", TaskStatus.NEW, null, null));
+        tm.add(new Task(0, "task 4", "4", TaskStatus.NEW, null, null));
+        tm.add(new Task(0, "task 5", "5", TaskStatus.NEW, null, null));
         assertEquals("task 1", tm.getTaskById(1).getTitle());
         assertEquals("task 1", tm.getHistory().getLast().getTitle());
         assertEquals("task 5", tm.getTaskById(5).getTitle());
