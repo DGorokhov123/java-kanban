@@ -67,7 +67,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     }
 
     @Test
-    void inMemoryDemo() {
+    void theUserBehaviourImitation() throws TaskIntersectionException {
         TaskManager tm = new InMemoryTaskManager(new TaskFactory(), new InMemoryHistoryManager(10));
         // Simple task #1
         tm.add(new Task(0, "Купить биткойн", "по сто рублей", TaskStatus.DONE, null, null));
@@ -136,7 +136,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         tm.update(new Subtask(e3s5.getId(), 0, "Стать сеньором", "и уехать в долину", TaskStatus.NEW, null, null));
         assertEquals("Стать сеньором", tm.getTaskById(15).getTitle());
 
-        System.out.println("======================== InMemory Demo ========================");
+        System.out.println("======================== The User Behaviour Imitation ========================");
         tm.getTasks().forEach(System.out::println);
         tm.getEpics().stream()
                 .peek(System.out::println)
