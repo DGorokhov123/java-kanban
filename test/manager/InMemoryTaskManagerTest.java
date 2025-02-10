@@ -73,7 +73,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     }
 
     @Test
-    void theUserBehaviourImitation() throws TaskIntersectionException {
+    void user_behaviour_simulation() throws TaskIntersectionException {
         TaskManager tm = new InMemoryTaskManager(new TaskFactory(), new InMemoryHistoryManager(10));
         // Simple task #1
         tm.add(new Task(0, "Купить биткойн", "по сто рублей", TaskStatus.DONE, null, null));
