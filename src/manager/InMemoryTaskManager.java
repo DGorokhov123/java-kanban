@@ -1,9 +1,8 @@
 package manager;
 import task.*;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Task manager containing all the data in RAM.
@@ -74,9 +73,14 @@ public class InMemoryTaskManager implements TaskManager {
     //#################################### Edit methods ####################################
 
     @Override
-    public Task add(Task task) {
+    public Task add(Task task) throws TaskIntersectionException {
         if (task == null) return null;
-        if (hasIntersections(task)) reArrangeTask(task);
+        List<Task> intersected = findIntersections(task);
+        if (!intersected.isEmpty()) {
+            String toMsg = intersected.stream().map(t -> String.valueOf(t.getId())).collect(Collectors.joining(", "));
+            throw new TaskIntersectionException("Add: Task \"" + task.getTitle()
+                                   + "\" has intersections with other tasks: " + toMsg);
+        }
         Task newTask = taskFactory.newTask(task);
         tasks.put(newTask.getId(), newTask);
         if (newTask.getStartTime() != null) sortedTasks.add(newTask);
@@ -92,9 +96,14 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask add(Subtask subtask) {
+    public Subtask add(Subtask subtask) throws TaskIntersectionException {
         if (subtask == null) return null;
-        if (hasIntersections(subtask)) reArrangeTask(subtask);
+        List<Task> intersected = findIntersections(subtask);
+        if (!intersected.isEmpty()) {
+            String toMsg = intersected.stream().map(t -> String.valueOf(t.getId())).collect(Collectors.joining(", "));
+            throw new TaskIntersectionException("Add: Subtask \"" + subtask.getTitle()
+                    + "\" has intersections with other tasks: " + toMsg);
+        }
         Task eTask = tasks.get(subtask.getEpicId());
         if (eTask == null) return null;
         if (eTask instanceof Epic epic) {
@@ -108,10 +117,15 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Task update(Task task) {
+    public Task update(Task task) throws TaskIntersectionException {
         if (task == null)  return null;
-        if (hasIntersections(task)) reArrangeTask(task);
         if (!tasks.containsKey(task.getId()))  return null;
+        List<Task> intersected = findIntersections(task);
+        if (!intersected.isEmpty()) {
+            String toMsg = intersected.stream().map(t -> String.valueOf(t.getId())).collect(Collectors.joining(", "));
+            throw new TaskIntersectionException("Update: Task \"" + task.getTitle()
+                    + "\" has intersections with other tasks: " + toMsg);
+        }
         Task foundTask = tasks.get(task.getId());
         if (foundTask instanceof Epic) {
             foundTask.update(task);
@@ -200,52 +214,12 @@ public class InMemoryTaskManager implements TaskManager {
 
     //#################################### Date Time methods ####################################
 
-    @Override
-    public boolean hasIntersections(Task task) {
-        if (task == null || task.getStartTime() == null) return false;
+    protected List<Task> findIntersections(Task task) {
+        if (task == null || task.getStartTime() == null) return List.of();
         return sortedTasks.stream()
-          .anyMatch(t -> t.getStartTime().isBefore(task.getEndTime()) && task.getStartTime().isBefore(t.getEndTime()));
+                .filter(t -> t.getStartTime().isBefore(task.getEndTime()) && task.getStartTime().isBefore(t.getEndTime()))
+                .filter(t -> !t.equals(task))
+                .toList();
     }
-
-    protected void reArrangeTask(Task task) {
-        if (task == null || task.getStartTime() == null) return;
-        List<Task> intersections;
-        LocalDateTime start, end;
-        int dayShift = 0;
-        int minuteShift = 0;
-
-        while (true) {
-            LocalDateTime finalStart = start = task.getStartTime().plusDays(dayShift).plusMinutes(minuteShift);
-            LocalDateTime finalEnd = end = task.getEndTime().plusDays(dayShift).plusMinutes(minuteShift);
-            intersections = sortedTasks.stream()
-                    .filter(t -> t.getStartTime().isBefore(finalEnd) && finalStart.isBefore(t.getEndTime()))
-                    .toList();
-            if (intersections.isEmpty()) {
-                task.setTiming(start, end);
-                return;
-            }
-            if (Duration.between(start, end).toHours() > 12) {
-                LocalDateTime lastPoint = intersections.stream()
-                        .map(Task::getEndTime)
-                        .max(Comparator.naturalOrder())
-                        .get();
-                dayShift += (int) Duration.between(start, lastPoint).toDays() + 1;
-                continue;
-            }
-            boolean ok = false;
-            while (end.getHour() < 21) {
-                minuteShift += 15;
-                LocalDateTime finalStart2 = start = start.plusMinutes(15);
-                LocalDateTime finalEnd2 = end = end.plusMinutes(15);
-                ok = intersections.stream()
-                        .noneMatch(t -> t.getStartTime().isBefore(finalEnd2) && finalStart2.isBefore(t.getEndTime()));
-                if (ok) break;
-            }
-            if (ok) continue;
-            minuteShift = 0;
-            dayShift++;
-        }
-    }
-
 
 }

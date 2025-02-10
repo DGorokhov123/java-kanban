@@ -62,7 +62,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Task add(Task task) {
+    public Task add(Task task) throws TaskIntersectionException {
         Task returnedTask = super.add(task);
         save();
         return returnedTask;
@@ -76,14 +76,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Subtask add(Subtask subtask) {
+    public Subtask add(Subtask subtask) throws TaskIntersectionException {
         Subtask returnedSubtask = super.add(subtask);
         save();
         return returnedSubtask;
     }
 
     @Override
-    public Task update(Task task) {
+    public Task update(Task task) throws TaskIntersectionException {
         Task updatedTask = super.update(task);
         save();
         return updatedTask;
