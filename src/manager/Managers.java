@@ -14,7 +14,7 @@ public class Managers {
      * @param historyManager instance of HistoryManager object to inject
      * @return {@code TaskManager} created object
      */
-    public static TaskManager getDefault(TaskFactory taskFactory, HistoryManager historyManager) {
+    public static InMemoryTaskManager getDefault(TaskFactory taskFactory, HistoryManager historyManager) {
         if (taskFactory == null) taskFactory = getDefaultFactory();
         if (historyManager == null) historyManager = getDefaultHistory();
         return new InMemoryTaskManager(taskFactory, historyManager);
@@ -24,7 +24,7 @@ public class Managers {
      * Returns a new default task manager with auto generated dependencies.
      * @return {@code TaskManager} created object
      */
-    public static TaskManager getDefault() {
+    public static InMemoryTaskManager getDefault() {
         return getDefault(null, null);
     }
 
@@ -38,7 +38,7 @@ public class Managers {
      * @param file CSV file to read
      * @return {@code TaskManager} created object
      */
-    public static TaskManager loadFromFile(TaskFactory taskFactory, HistoryManager historyManager, File file) {
+    public static FileBackedTaskManager loadFromFile(TaskFactory taskFactory, HistoryManager historyManager, File file) {
         if (taskFactory == null) taskFactory = getDefaultFactory();
         if (historyManager == null) historyManager = getDefaultHistory();
         FileBackedTaskManager taskManager = new FileBackedTaskManager(taskFactory, historyManager, file);
@@ -51,7 +51,7 @@ public class Managers {
      * @param file CSV file to read
      * @return {@code TaskManager} created object
      */
-    public static TaskManager loadFromFile(File file) {
+    public static FileBackedTaskManager loadFromFile(File file) {
         return loadFromFile(null, null, file);
     }
 
@@ -62,7 +62,7 @@ public class Managers {
      * Returns a new default history manager with unlimited size
      * @return {@code HistoryManager} created object
      */
-    public static HistoryManager getDefaultHistory() {
+    public static InMemoryHistoryManager getDefaultHistory() {
         return new InMemoryHistoryManager();
     }
 
@@ -71,7 +71,7 @@ public class Managers {
      * @param historySize {@code int} size of history
      * @return {@code HistoryManager} created object
      */
-    public static HistoryManager getDefaultHistory(int historySize) {
+    public static InMemoryHistoryManager getDefaultHistory(int historySize) {
         return new InMemoryHistoryManager(historySize);
     }
 

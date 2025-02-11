@@ -1,146 +1,20 @@
 package manager;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import task.*;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
-
+import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
-class InMemoryTaskManagerTest {
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
+class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
 
-    InMemoryTaskManager tm;
-
-    @BeforeEach
-    void setUpAndAllAddMethods() {
-        TaskFactory taskFactory = new TaskFactory();
-        HistoryManager historyManager = new InMemoryHistoryManager(10);
-        tm = new InMemoryTaskManager(taskFactory, historyManager);
-        tm.add(new Task("task 1", "1", TaskStatus.NEW));
-        Epic e1 = tm.add(new Epic("epic 1", "2"));
-        tm.add(new Subtask("subtask 1", "3", TaskStatus.NEW, e1.getId()));
-        tm.add(new Subtask("subtask 2", "4", TaskStatus.NEW, e1.getId()));
-        tm.add(new Task("task 2", "5", TaskStatus.NEW));
-    }
-
-    @Test
-    void allGetMethods() {
-        assertEquals("1", tm.getTaskById(1).getDescription());
-        assertEquals("2", tm.getTaskById(2).getDescription());
-        assertEquals("3", tm.getTaskById(3).getDescription());
-        assertEquals("4", tm.getTaskById(4).getDescription());
-        assertEquals("5", tm.getTaskById(5).getDescription());
-
-        List<Task> tasks = tm.getTasks();
-        assertEquals("task 1", tasks.get(0).getTitle());
-        assertEquals("task 2", tasks.get(1).getTitle());
-
-        List<Epic> epics = tm.getEpics();
-        assertEquals("epic 1", epics.get(0).getTitle());
-
-        List<Subtask> subtasks = tm.getSubTasks(epics.get(0).getId());
-        assertEquals("subtask 1", subtasks.get(0).getTitle());
-        assertEquals("subtask 2", subtasks.get(1).getTitle());
-        assertTrue(tm.getSubTasks(1).isEmpty());
-        assertTrue(tm.getSubTasks(4).isEmpty());
-    }
-
-    @Test
-    void getHistory() {
-        assertTrue(tm.getHistory().isEmpty());
-        tm.getTaskById(1);
-        assertEquals(1, tm.getHistory().size());
-        assertEquals(1, tm.getHistory().getFirst().getId());
-        for (int i = 0; i < 12; i++) tm.getTaskById(i);
-        tm.getTaskById(4);
-        tm.getTaskById(2);
-        tm.getTaskById(5);
-        tm.getTaskById(2);
-        assertEquals(5, tm.getHistory().size());
-        assertEquals(1, tm.getHistory().get(0).getId());
-        assertEquals(3, tm.getHistory().get(1).getId());
-        assertEquals(4, tm.getHistory().get(2).getId());
-        assertEquals(5, tm.getHistory().get(3).getId());
-        assertEquals(2, tm.getHistory().get(4).getId());
-    }
-
-    @Test
-    void update() {
-        tm.update(new Task(1, "updated task 1", "1", TaskStatus.IN_PROGRESS));
-        assertEquals("updated task 1", tm.getTaskById(1).getTitle());
-        tm.update(new Epic(2, "updated epic 1", "2"));
-        assertEquals("updated epic 1", tm.getTaskById(2).getTitle());
-        tm.update(new Subtask(3, "updated subtask 1", "3", TaskStatus.NEW));
-        assertEquals("updated subtask 1", tm.getTaskById(3).getTitle());
-    }
-
-    @Test
-    void updateWrongTypes() {
-        tm.update(new Epic(1, "epic to task", "2"));
-        tm.update(new Subtask(1, "subtask to task", "3", TaskStatus.NEW));
-        assertEquals("task 1", tm.getTaskById(1).getTitle());
-
-        tm.update(new Task(2, "task to epic", "1", TaskStatus.IN_PROGRESS));
-        tm.update(new Subtask(2, "subtask to epic", "3", TaskStatus.NEW));
-        assertEquals("epic 1", tm.getTaskById(2).getTitle());
-
-        tm.update(new Task(3, "task to subtask", "1", TaskStatus.IN_PROGRESS));
-        tm.update(new Epic(3, "epic to subtask", "2"));
-        assertEquals("subtask 1", tm.getTaskById(3).getTitle());
-    }
-
-    @Test
-    void removeById() {
-        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
-        assertEquals(5, tm.getHistory().size());                  // history size = 5
-
-        tm.removeById(1);                                         // remove simple task #1
-        assertNull(tm.getTaskById(1));
-        assertEquals(4, tm.getHistory().size());
-
-        assertEquals(2, tm.getEpics().getFirst().getSubtasks().size());
-        tm.removeById(3);                                         // remove subtask #3
-        assertNull(tm.getTaskById(3));
-        assertEquals(1, tm.getEpics().getFirst().getSubtasks().size());
-        assertEquals(3, tm.getHistory().size());
-
-        assertEquals(3, tm.getTasks().size() + tm.getEpics().size() + tm.getSubTasks(2).size());
-        tm.removeById(2);                                         // remove epic #2 (and its subtask #4)
-        assertNull(tm.getTaskById(2));
-        assertNull(tm.getTaskById(4));
-        assertNotNull(tm.getTaskById(5));
-        assertEquals(1, tm.getHistory().size());
-    }
-
-    @Test
-    void removeAllTasks() {
-        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
-        tm.removeAllTasks();
-        assertTrue(tm.getTasks().isEmpty());
-        assertEquals(1, tm.getEpics().size());
-        assertEquals(2, tm.getSubTasks(2).size());
-        assertEquals(3, tm.getHistory().size());
-    }
-
-    @Test
-    void removeAllSubtasks() {
-        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
-        tm.removeAllSubtasks();
-        assertEquals(2, tm.getTasks().size());
-        assertEquals(1, tm.getEpics().size());
-        assertTrue(tm.getSubTasks(2).isEmpty());
-        assertEquals(3, tm.getHistory().size());
-    }
-
-    @Test
-    void removeAllEpics() {
-        for (int i = 0; i < 15; i++) tm.getTaskById(i);           // views history ids { 1, 2, 3, 4, 5 }
-        tm.removeAllEpics();
-        assertEquals(2, tm.getTasks().size());
-        assertTrue(tm.getEpics().isEmpty());
-        assertTrue(tm.getSubTasks(2).isEmpty());
-        assertEquals(2, tm.getHistory().size());
+    protected InMemoryTaskManagerTest() {
+        super(new InMemoryTaskManager(new TaskFactory(), new InMemoryHistoryManager(10)));
     }
 
     @Test
@@ -151,28 +25,179 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    void keepFieldsWhenAdd() {
-        Task t1 = new Task("very", "important data", TaskStatus.DONE);
-        Task t2 = tm.add(t1);
-        assertEquals(t1.getTitle(), t2.getTitle());
-        assertEquals(t1.getDescription(), t2.getDescription());
-        assertEquals(t1.getStatus(), t2.getStatus());
-
-        Epic e1 = new Epic("very", "important data");
-        Epic e2 = tm.add(e1);
-        assertEquals(e1.getTitle(), e2.getTitle());
-        assertEquals(e1.getDescription(), e2.getDescription());
-        assertEquals(e1.getStatus(), e2.getStatus());
-
-        Subtask s1 = new Subtask("very", "important data", TaskStatus.DONE, e2.getId());
-        Subtask s2 = tm.add(s1);
-        assertEquals(s1.getTitle(), s2.getTitle());
-        assertEquals(s1.getDescription(), s2.getDescription());
-        assertEquals(s1.getStatus(), s2.getStatus());
-
-        assertEquals(e2.getStatus(), s2.getStatus());
+    void continuousHistoryOps() {
+        TaskManager tm = new InMemoryTaskManager(new TaskFactory(), new InMemoryHistoryManager(10));
+        Random rnd = new Random();
+        int choice = 0;
+        int lastID = 0;
+        int lastEpicID = 0;
+        try {
+            for (int i = 0; i < 1000; i++) {
+                choice = rnd.nextInt(8);
+                if (choice == 0) {
+                    lastID = tm.add(new Task(0, "t", "", TaskStatus.NEW, null, null)).getId();
+                } else if (choice == 1) {
+                    lastID = tm.add(new Epic(0, "e", "")).getId();
+                    lastEpicID = lastID;
+                } else if (choice <= 3 && lastEpicID > 0) {
+                    lastID = tm.add(new Subtask(0, lastEpicID, "s", "", TaskStatus.NEW, null, null)).getId();
+                } else if (choice <= 5 && lastID > 0) {
+                    int rndRes = rnd.nextInt(lastID);
+                    Task tsk = tm.getTaskById(rndRes);
+                    if (tsk instanceof Epic) {
+                        tm.update(new Epic(rndRes, "Epic", String.valueOf(i)));
+                    } else if (tsk instanceof Subtask) {
+                        tm.update(new Subtask(rndRes, 0, "Subtask", String.valueOf(i), TaskStatus.DONE, null, null));
+                    } else {
+                        tm.update(new Task(rndRes, "Task", String.valueOf(i), TaskStatus.DONE, null, null));
+                    }
+                } else {
+                    int rndRes = rnd.nextInt(lastID + 1);
+                    if (rndRes != lastEpicID) tm.removeById(rndRes);
+                }
+            }
+        } catch (TaskIntersectionException e) {
+            assertNull(e);
+        }
+        System.out.println("======================== Корректность истории ========================");
+        int historyCounter = 1;
+        Task prevTask = null;
+        for (Task task : tm.getHistory()) {
+            if (prevTask == null) {
+                prevTask = task;
+            } else {
+                assertTrue(prevTask.getDescription().compareTo(task.getDescription()) < 0);
+            }
+            System.out.println(historyCounter++ + ". " + task.toString());
+        }
     }
 
+    @Test
+    void user_behaviour_simulation() throws TaskIntersectionException {
+        TaskManager tm = new InMemoryTaskManager(new TaskFactory(), new InMemoryHistoryManager(10));
+        // Simple task #1
+        tm.add(new Task(0, "Купить биткойн", "по сто рублей", TaskStatus.DONE, null, null));
+        assertEquals("Купить биткойн", tm.getTaskById(1).getTitle());
 
+        // Simple task #2 - add + update
+        Task t2 = tm.add(new Task(0, "Старый тайтл", "метод update не сработал!", TaskStatus.NEW, null, null));
+        assertEquals("Старый тайтл", tm.getTaskById(2).getTitle());
+        tm.update(new Task(t2.getId(), "Новый тайтл", "метод update успешно отработал", TaskStatus.IN_PROGRESS, null, null));
+        assertEquals("Новый тайтл", tm.getTaskById(2).getTitle());
+
+        // Simple task #3 - add + delete
+        Task t3 = tm.add(new Task(0, "Удаление таска", "это должно быть удалено", TaskStatus.NEW, null, null));
+        assertEquals("Удаление таска", tm.getTaskById(3).getTitle());
+        tm.removeById(t3.getId());
+        assertNull(tm.getTaskById(3));
+
+        // Epic #1
+        Epic e1 = tm.add(new Epic(0, "Наладить жизнь в России", ""));
+        assertEquals("Наладить жизнь в России", tm.getTaskById(4).getTitle());
+        assertEquals(TaskStatus.NEW, tm.getTaskById(4).getStatus());
+        tm.add(new Subtask(0, e1.getId(), "Запретить все плохое", "Составить реестр плохого, принять законы", TaskStatus.DONE, null, null));
+        assertEquals("Запретить все плохое", tm.getTaskById(5).getTitle());
+        assertEquals(TaskStatus.DONE, tm.getTaskById(4).getStatus());
+        tm.add(new Subtask(0, e1.getId(), "Увеличить рождаемость", "вернуть в страну Павла Дурова", TaskStatus.IN_PROGRESS, null, null));
+        assertEquals("Увеличить рождаемость", tm.getTaskById(6).getTitle());
+        assertEquals(TaskStatus.IN_PROGRESS, tm.getTaskById(4).getStatus());
+        tm.add(new Subtask(0, e1.getId(), "Укрепить рубль", "и уменьшить ключевую ставку", TaskStatus.NEW, null, null));
+        assertEquals("Укрепить рубль", tm.getTaskById(7).getTitle());
+        assertEquals(TaskStatus.IN_PROGRESS, tm.getTaskById(4).getStatus());
+
+        // Epic #2 - add + delete
+        Epic e2 = tm.add(new Epic(0, "Проверить удаление эпиков", ""));
+        assertEquals("Проверить удаление эпиков", tm.getTaskById(8).getTitle());
+        tm.add(new Subtask(0, e2.getId(), "а также", "всех его сабтасков", TaskStatus.NEW, null, null));
+        assertEquals("а также", tm.getTaskById(9).getTitle());
+        tm.removeById(e2.getId());
+        assertNull(tm.getTaskById(8));
+        assertNull(tm.getTaskById(9));
+
+        // Epic #3 - add + update + delete subtask
+        Epic e3 = tm.add(new Epic(0, "Название эпика надо изменить", ""));
+        assertEquals("Название эпика надо изменить", tm.getTaskById(10).getTitle());
+        assertEquals(TaskStatus.NEW, tm.getTaskById(10).getStatus());
+        Subtask e3s1 = tm.add(new Subtask(0, e3.getId(), "этот сабтаск 11", "нужно изменить", TaskStatus.NEW, null, null));
+        assertEquals("этот сабтаск 11", tm.getTaskById(11).getTitle());
+        Subtask e3s2 = tm.add(new Subtask(0, e3.getId(), "этот сабтаск 12", "нужно изменить", TaskStatus.NEW, null, null));
+        assertEquals("этот сабтаск 12", tm.getTaskById(12).getTitle());
+        Subtask e3s3 = tm.add(new Subtask(0, e3.getId(), "этот сабтаск 13", "нужно изменить", TaskStatus.NEW, null, null));
+        assertEquals("этот сабтаск 13", tm.getTaskById(13).getTitle());
+        Subtask e3s4 = tm.add(new Subtask(0, e3.getId(), "а вот этот сабтаск 14", "нужно удалить", TaskStatus.NEW, null, null));
+        assertEquals("а вот этот сабтаск 14", tm.getTaskById(14).getTitle());
+        Subtask e3s5 = tm.add(new Subtask(0, e3.getId(), "этот сабтаск 15", "нужно изменить", TaskStatus.NEW, null, null));
+        assertEquals("этот сабтаск 15", tm.getTaskById(15).getTitle());
+
+        tm.update(new Epic(e3.getId(), "Стать крутым прогером", "план надежный как швейцарские часы"));
+        assertEquals("Стать крутым прогером", tm.getTaskById(10).getTitle());
+        tm.update(new Subtask(e3s1.getId(), 0, "Закончить курсы", "например Яндекс Практикум", TaskStatus.IN_PROGRESS, null, null));
+        assertEquals("Закончить курсы", tm.getTaskById(11).getTitle());
+        tm.update(new Subtask(e3s2.getId(), 0, "Стать джуном", "найти любую работу", TaskStatus.NEW, null, null));
+        assertEquals("Стать джуном", tm.getTaskById(12).getTitle());
+        tm.update(new Subtask(e3s3.getId(), 0, "Стать мидлом", "найти работу за хорошие деньги", TaskStatus.NEW, null, null));
+        assertEquals("Стать мидлом", tm.getTaskById(13).getTitle());
+        tm.removeById(e3s4.getId());
+        assertNull(tm.getTaskById(14));
+        tm.update(new Subtask(e3s5.getId(), 0, "Стать сеньором", "и уехать в долину", TaskStatus.NEW, null, null));
+        assertEquals("Стать сеньором", tm.getTaskById(15).getTitle());
+
+        System.out.println("======================== The User Behaviour Imitation ========================");
+        tm.getTasks().forEach(System.out::println);
+        tm.getEpics().stream()
+                .peek(System.out::println)
+                .forEach(e -> { tm.getSubTasks(e.getId()).forEach(s -> {
+                    System.out.println("\t" + s.toString());
+                }); });
+
+        // non-existent tasks
+        assertTrue(tm.getSubTasks(444).isEmpty());
+        assertNull(tm.getTaskById(4568));
+        assertNull(tm.getTaskById(8745));
+        assertNull(tm.getTaskById(9852));
+
+        // history
+        for (int i = 0; i < 20; i++) tm.getTaskById(i);
+        tm.getTaskById(6); tm.getTaskById(6);
+        tm.getTaskById(5);
+        tm.getTaskById(6); tm.getTaskById(6); tm.getTaskById(6); tm.getTaskById(6); tm.getTaskById(6);
+        tm.getTaskById(7);
+        List<Task> th = tm.getHistory();
+        assertEquals(7, th.get(9).getId());
+        assertEquals(6, th.get(8).getId());
+        assertEquals(5, th.get(7).getId());
+        assertEquals(15, th.get(6).getId());
+        assertEquals(13, th.get(5).getId());
+        assertEquals(12, th.get(4).getId());
+        assertEquals(11, th.get(3).getId());
+        assertEquals(10, th.get(2).getId());
+
+        // remove demo
+        tm.removeAllTasks();
+        assertTrue(tm.getTasks().isEmpty());
+        assertTrue(tm.getHistory().stream().noneMatch(t -> !(t instanceof Epic) && !(t instanceof Subtask)));
+
+        tm.removeAllSubtasks();
+        tm.getEpics().forEach(e -> { assertTrue(tm.getSubTasks(e.getId()).isEmpty()); });
+        assertTrue(tm.getHistory().stream().noneMatch(s -> (s instanceof Subtask)));
+
+        tm.removeAllEpics();
+        assertTrue(tm.getEpics().isEmpty());
+        assertTrue(tm.getHistory().isEmpty());
+    }
+
+    @Test
+    void taskIntersections() {
+        try {
+            Task newtask = new Task(0, "new", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 1, 1), Duration.ofHours(5));
+            Task task1 = taskManager.add(new Task(0, "1", "", TaskStatus.NEW, LocalDateTime.of(2000, 5, 5, 1, 1), Duration.ofHours(5)));
+            assertDoesNotThrow(() -> {taskManager.checkIntersections(newtask);});
+            Task task2 = taskManager.add(new Task(0, "2", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 3, 21), Duration.ofHours(5)));
+            assertThrows(TaskIntersectionException.class, () -> {taskManager.checkIntersections(newtask);});
+            assertDoesNotThrow(() -> {taskManager.checkIntersections(task1);});
+        } catch (TaskIntersectionException e) {
+            assertNull(e);
+        }
+    }
 
 }

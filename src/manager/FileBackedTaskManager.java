@@ -13,7 +13,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private void save() {
-        String header = "\"id\",\"type\",\"title\",\"status\",\"description\",\"epic\"";
+        String header = "\"id\",\"type\",\"title\",\"status\",\"description\",\"starttime\",\"duration\",\"epic\"";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write(header + "\n");
             for (Task task : tasks.values())  writer.write(task.toCSVLine() + "\n");
@@ -34,6 +34,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         taskFactory.clear();
         historyManager.clear();
         tasks.clear();
+        sortedTasks.clear();
+
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             reader.readLine();                        // header
             while (reader.ready()) {
@@ -48,6 +50,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     }
                 }
             }
+            sortedTasks.addAll(tasks.values().stream()
+                    .filter(t -> !(t instanceof Epic))
+                    .filter(t -> t.getStartTime() != null)
+                    .toList());
         } catch (IOException e) {
             throw new ManagerLoadException("IO Error reading file " + file.toString());
         } catch (WrongCSVLineException e) {
@@ -56,7 +62,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Task add(Task task) {
+    public Task add(Task task) throws TaskIntersectionException {
         Task returnedTask = super.add(task);
         save();
         return returnedTask;
@@ -70,14 +76,14 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Subtask add(Subtask subtask) {
+    public Subtask add(Subtask subtask) throws TaskIntersectionException {
         Subtask returnedSubtask = super.add(subtask);
         save();
         return returnedSubtask;
     }
 
     @Override
-    public Task update(Task task) {
+    public Task update(Task task) throws TaskIntersectionException {
         Task updatedTask = super.update(task);
         save();
         return updatedTask;

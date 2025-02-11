@@ -1,4 +1,7 @@
 package task;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -10,32 +13,18 @@ public class Task {
     protected String title;
     protected String description;
     protected TaskStatus status;
+    protected LocalDateTime startTime;
+    protected Duration duration;
 
-    /**
-     * Updating constructor makes object for update method.
-     * @param id
-     * @param title
-     * @param description
-     * @param status
-     */
-    public Task(int id, String title, String description, TaskStatus status) {
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
+    public Task(int id, String title, String description, TaskStatus status, LocalDateTime startTime, Duration duration) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
-    }
-
-    /**
-     * Adding constructor makes object for add method.
-     * @param title
-     * @param description
-     * @param status
-     */
-    public Task(String title, String description, TaskStatus status) {
-        this.id = 0;
-        this.title = title;
-        this.description = description;
-        this.status = status;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
     public int getId() {
@@ -54,16 +43,28 @@ public class Task {
         return status;
     }
 
-    private void setTitle(String title) {
-        this.title = title;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    private void setDescription(String description) {
-        this.description = description;
+    public Duration getDuration() {
+        return duration;
     }
 
-    void setStatus(TaskStatus status) {
-        this.status = status;
+    public LocalDateTime getEndTime() {
+        if (startTime == null)  return null;
+        if (duration == null)  return startTime;
+        return startTime.plus(duration);
+    }
+
+    public void setTiming(LocalDateTime startTime, Duration duration) {
+        this.startTime = startTime;
+        this.duration = duration;
+    }
+
+    public void setTiming(LocalDateTime startTime, LocalDateTime endTime) {
+        this.startTime = startTime;
+        this.duration = (startTime != null && endTime != null) ? Duration.between(startTime, endTime) : null;
     }
 
     /**
@@ -71,11 +72,12 @@ public class Task {
      * @param task new instance of Task object, containing new data
      */
     public boolean update(Task task) {
-        if (task == null) return false;
-        if (task.getClass() != this.getClass()) return false;
-        setTitle(task.getTitle());
-        setDescription(task.getDescription());
-        setStatus(task.getStatus());
+        if (task == null || task.getClass() != this.getClass()) return false;
+        this.title = task.title;
+        this.description = task.description;
+        this.status = task.status;
+        this.startTime = task.startTime;
+        this.duration = task.duration;
         return true;
     }
 
@@ -85,10 +87,16 @@ public class Task {
     public String toCSVLine() {
         StringBuilder builder = new StringBuilder();
         builder.append("\"").append(id).append("\",");
-        builder.append("\"").append(TaskType.TASK.toString()).append("\",");
+        builder.append("\"").append(TaskType.TASK).append("\",");
         builder.append("\"").append(title).append("\",");
         builder.append("\"").append(status.toString()).append("\",");
-        builder.append("\"").append(description).append("\"");
+        builder.append("\"").append(description).append("\",");
+        builder.append("\"");
+        if (startTime != null)  builder.append(startTime.format(DATE_TIME_FORMATTER));
+        builder.append("\",");
+        builder.append("\"");
+        if (duration != null)  builder.append(duration.toSeconds());
+        builder.append("\"");
         return builder.toString();
     }
 
@@ -97,7 +105,9 @@ public class Task {
      */
     @Override
     public String toString() {
-        return "Task #" + id + "\t[" + status + "]\t" + title + " (" + description + ")";
+        String start = (startTime != null) ? startTime.format(DATE_TIME_FORMATTER) : "null";
+        String end = (getEndTime() != null) ? getEndTime().format(DATE_TIME_FORMATTER) : "null";
+        return "Task #" + id + " [" + status + "] " + title + " (" + description + ") {" + start + " --> " + end + "}";
     }
 
     /**

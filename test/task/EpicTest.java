@@ -1,25 +1,19 @@
 package task;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class EpicTest {
 
-    Epic epic;
-    Subtask subtask1;
-    Subtask subtask2;
-
-    @BeforeEach
-    void setUp() {
-        epic = new Epic(15, "Epic title", "Epic description");
-        subtask1 = new Subtask(234, "First title", "First description", TaskStatus.NEW);
-        subtask2 = new Subtask(473, "Second title", "Second description", TaskStatus.DONE);
-    }
-
     @Test
     void getSubtasks() {
+        Epic epic = new Epic(15, "Epic title", "Epic description");
+        Subtask subtask1 = new Subtask(234, 0, "First title", "First description", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3));
+        Subtask subtask2 = new Subtask(473, 0, "Second title", "Second description", TaskStatus.DONE, LocalDateTime.now(), Duration.ofHours(3));
         assertTrue(epic.getSubtasks().isEmpty());
         epic.linkSubtask(subtask1);
         assertEquals(1, epic.getSubtasks().size());
@@ -31,27 +25,35 @@ class EpicTest {
     }
 
     @Test
-    void linkUnlinkAndChangeStatus() {
+    void changeStatus() {
+        Epic epic = new Epic(1, "e1", "");
         assertEquals(TaskStatus.NEW, epic.getStatus());
-        epic.linkSubtask(subtask1);
+        epic.linkSubtask(new Subtask(2, 0, "s2", "", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
+        epic.linkSubtask(new Subtask(3, 0, "s3", "", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
         assertEquals(TaskStatus.NEW, epic.getStatus());
-        subtask1.setStatus(TaskStatus.IN_PROGRESS);
+        epic.linkSubtask(new Subtask(4, 0, "s4", "", TaskStatus.DONE, LocalDateTime.now(), Duration.ofHours(3)));
         assertEquals(TaskStatus.IN_PROGRESS, epic.getStatus());
-        epic.linkSubtask(subtask2);
-        assertEquals(TaskStatus.IN_PROGRESS, epic.getStatus());
-        epic.unlinkSubtask(234);
-        assertEquals(TaskStatus.DONE, epic.getStatus());
-        epic.unlinkSubtask(473);
-        assertEquals(TaskStatus.NEW, epic.getStatus());
-    }
 
-    @Test
-    void testToStringAndShortConstructor() {
-        Epic epic2 = new Epic("Any title", "Any description");
-        assertEquals("Epic #0\t[NEW]\tAny title (Any description)", epic2.toString());
-        assertEquals("Epic #15\t[NEW]\tEpic title (Epic description)", epic.toString());
-        epic2 = new Epic("Any title", "");
-        assertEquals("Epic #0\t[NEW]\tAny title", epic2.toString());
+        Epic epic1 = new Epic(1, "e1", "");
+        assertEquals(TaskStatus.NEW, epic1.getStatus());
+        epic1.linkSubtask(new Subtask(2, 0, "s2", "", TaskStatus.DONE, LocalDateTime.now(), Duration.ofHours(3)));
+        epic1.linkSubtask(new Subtask(3, 0, "s3", "", TaskStatus.DONE, LocalDateTime.now(), Duration.ofHours(3)));
+        epic1.linkSubtask(new Subtask(4, 0, "s4", "", TaskStatus.DONE, LocalDateTime.now(), Duration.ofHours(3)));
+        assertEquals(TaskStatus.DONE, epic1.getStatus());
+
+        Epic epic2 = new Epic(1, "e1", "");
+        assertEquals(TaskStatus.NEW, epic2.getStatus());
+        epic2.linkSubtask(new Subtask(2, 0, "s2", "", TaskStatus.IN_PROGRESS, LocalDateTime.now(), Duration.ofHours(3)));
+        epic2.linkSubtask(new Subtask(3, 0, "s3", "", TaskStatus.IN_PROGRESS, LocalDateTime.now(), Duration.ofHours(3)));
+        epic2.linkSubtask(new Subtask(4, 0, "s4", "", TaskStatus.IN_PROGRESS, LocalDateTime.now(), Duration.ofHours(3)));
+        assertEquals(TaskStatus.IN_PROGRESS, epic2.getStatus());
+
+        Epic epic3 = new Epic(1, "e1", "");
+        assertEquals(TaskStatus.NEW, epic3.getStatus());
+        epic3.linkSubtask(new Subtask(2, 0, "s2", "", TaskStatus.NEW, LocalDateTime.now(), Duration.ofHours(3)));
+        epic3.linkSubtask(new Subtask(3, 0, "s3", "", TaskStatus.IN_PROGRESS, LocalDateTime.now(), Duration.ofHours(3)));
+        epic3.linkSubtask(new Subtask(4, 0, "s4", "", TaskStatus.DONE, LocalDateTime.now(), Duration.ofHours(3)));
+        assertEquals(TaskStatus.IN_PROGRESS, epic3.getStatus());
     }
 
 }

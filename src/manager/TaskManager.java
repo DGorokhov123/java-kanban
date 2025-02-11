@@ -33,9 +33,14 @@ public interface TaskManager {
      * Returns a list of all subtasks (Subtask objects) of the specified epic.
      * @param epicId ID of the epic.
      * @return {@code ArrayList<Subtask>} list of existing objects,
-     * or {@code null} if list is empty or specified epic doesn't exist.
      */
     List<Subtask> getSubTasks(int epicId);
+
+    /**
+     * Returns a list of all tasks and subtasks ordered by start time
+     * @return {@code List<Task>} list of existing objects,
+     */
+    List<Task> getPrioritizedTasks();
 
     /**
      * Returns list of last viewed tasks
@@ -51,7 +56,7 @@ public interface TaskManager {
      * @param task Task data object to add to manager
      * @return {@code Task} new generated task, or {@code null} in case of wrong parameter
      */
-    Task add(Task task);
+    Task add(Task task) throws TaskIntersectionException;
 
     /**
      * Adds a new Epic
@@ -65,14 +70,14 @@ public interface TaskManager {
      * @param subtask Subtask data object to add to manager
      * @return {@code Subtask} new generated subtask, or {@code null} in case of wrong parameter
      */
-    Subtask add(Subtask subtask);
+    Subtask add(Subtask subtask) throws TaskIntersectionException;
 
     /**
      * Updates an existing Task (or its child Epic / Subtask).
      * @param task New instance of extended Task type object, containing new data for existing entry.
      * @return {@code Task} updated object, or {@code null} in case of wrong ID
      */
-    Task update(Task task);
+    Task update(Task task) throws TaskIntersectionException;
 
 
     //#################################### Remove methods. ####################################
@@ -99,6 +104,5 @@ public interface TaskManager {
      * Removes all epics (Epic objects) and all subtasks (Subtask objects).
      */
     void removeAllEpics();
-
 
 }

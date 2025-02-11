@@ -1,4 +1,4 @@
 "id","type","title","status","description","epic"
-"1","TASK","Task","NEW","task"
-"2","EPIC","Epic","IN_PROGRESS","epic"
-"3","SUBTASK","Subtask","DONE","subtask","2"
+"1","TASK","Task","NEW","task","03.02.2025 14:25","10800"
+"2","EPIC","Epic","IN_PROGRESS","epic","03.02.2025 14:25","10800"
+"3","SUBTASK","Subtask","DONE","subtask","03.02.2025 14:25","10800","2"

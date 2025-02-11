@@ -1,5 +1,7 @@
 package task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -9,24 +11,10 @@ import java.util.Map;
 public class Epic extends Task {
 
     private final LinkedHashMap<Integer, Subtask> subtasks = new LinkedHashMap<>();
+    private LocalDateTime endTime;
 
-    /**
-     * Updating constructor makes object for update method.
-     * @param id
-     * @param title
-     * @param description
-     */
     public Epic(int id, String title, String description) {
-        super(id, title, description, TaskStatus.NEW);
-    }
-
-    /**
-     * Adding constructor makes object for add method.
-     * @param title
-     * @param description
-     */
-    public Epic(String title, String description) {
-        super(title, description, TaskStatus.NEW);
+        super(id, title, description, TaskStatus.NEW, null, null);
     }
 
     /**
@@ -38,17 +26,9 @@ public class Epic extends Task {
     }
 
     /**
-     * Sets status of this Epic by calculation based on subtasks statuses.
-     */
-    @Override
-    void setStatus(TaskStatus status) {
-        calculateStatus();
-    }
-
-    /**
      * Calculates status of this Epic basing on subtasks statuses.
      */
-    private void calculateStatus() {
+    void calculateStatus() {
         boolean isNew = true;
         boolean isDone = true;
         for (Subtask subtask : subtasks.values()) {
@@ -58,6 +38,22 @@ public class Epic extends Task {
         if (isNew) status = TaskStatus.NEW;
         else if (isDone) status = TaskStatus.DONE;
         else status = TaskStatus.IN_PROGRESS;
+    }
+
+    /**
+     * Calculates startTime, endTime, duration for this Epic basing on subtasks info
+     */
+    void calculateTime() {
+        LocalDateTime firstTime = null;
+        LocalDateTime lastTime = null;
+        for (Subtask subtask : subtasks.values()) {
+            if (subtask.getStartTime() != null && (firstTime == null || subtask.getStartTime().isBefore(firstTime))) firstTime = subtask.getStartTime();
+            if (subtask.getEndTime() != null && (lastTime == null || subtask.getEndTime().isAfter(lastTime))) lastTime = subtask.getEndTime();
+        }
+        startTime = firstTime;
+        endTime = lastTime;
+        if (firstTime != null && lastTime != null) duration = Duration.between(firstTime, lastTime);
+        else duration = null;
     }
 
     /**
@@ -71,6 +67,7 @@ public class Epic extends Task {
         subtasks.put(subtask.getId(), subtask);
         subtask.setEpic(this);
         calculateStatus();
+        calculateTime();
         return true;
     }
 
@@ -85,6 +82,21 @@ public class Epic extends Task {
         subtask.setEpic(null);
         subtasks.remove(id);
         calculateStatus();
+        calculateTime();
+        return true;
+    }
+
+    /**
+     * Updates this Epic using data from received epic.
+     * @param task new instance of Epic object, containing new data
+     */
+    @Override
+    public boolean update(Task task) {
+        if (task == null || task.getClass() != this.getClass()) return false;
+        this.title = task.title;
+        this.description = task.description;
+        calculateStatus();
+        calculateTime();
         return true;
     }
 
@@ -98,7 +110,13 @@ public class Epic extends Task {
         builder.append("\"").append(TaskType.EPIC.toString()).append("\",");
         builder.append("\"").append(title).append("\",");
         builder.append("\"").append(status.toString()).append("\",");
-        builder.append("\"").append(description).append("\"");
+        builder.append("\"").append(description).append("\",");
+        builder.append("\"");
+        if (startTime != null)  builder.append(startTime.format(DATE_TIME_FORMATTER));
+        builder.append("\",");
+        builder.append("\"");
+        if (duration != null)  builder.append(duration.toSeconds());
+        builder.append("\"");
         return builder.toString();
     }
 
@@ -109,6 +127,9 @@ public class Epic extends Task {
     public String toString() {
         StringBuilder res = new StringBuilder("Epic #" + id + "\t[" + status + "]\t" + title);
         if (!description.isEmpty())  res.append(" (").append(description).append(")");
+        String start = (startTime != null) ? startTime.format(DATE_TIME_FORMATTER) : "null";
+        String end = (getEndTime() != null) ? getEndTime().format(DATE_TIME_FORMATTER) : "null";
+        res.append(" {").append(start).append(" --> ").append(end).append("}");
         return res.toString();
     }
 
