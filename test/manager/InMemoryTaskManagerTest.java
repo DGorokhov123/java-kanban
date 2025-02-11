@@ -191,10 +191,10 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         try {
             Task newtask = new Task(0, "new", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 1, 1), Duration.ofHours(5));
             Task task1 = taskManager.add(new Task(0, "1", "", TaskStatus.NEW, LocalDateTime.of(2000, 5, 5, 1, 1), Duration.ofHours(5)));
-            assertTrue(taskManager.findIntersections(newtask).isEmpty());
+            assertDoesNotThrow(() -> {taskManager.checkIntersections(newtask);});
             Task task2 = taskManager.add(new Task(0, "2", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 3, 21), Duration.ofHours(5)));
-            assertFalse(taskManager.findIntersections(newtask).isEmpty());
-            assertTrue(taskManager.findIntersections(task1).isEmpty());
+            assertThrows(TaskIntersectionException.class, () -> {taskManager.checkIntersections(newtask);});
+            assertDoesNotThrow(() -> {taskManager.checkIntersections(task1);});
         } catch (TaskIntersectionException e) {
             assertNull(e);
         }

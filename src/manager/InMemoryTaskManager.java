@@ -75,12 +75,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Task add(Task task) throws TaskIntersectionException {
         if (task == null) return null;
-        List<Task> intersected = findIntersections(task);
-        if (!intersected.isEmpty()) {
-            String toMsg = intersected.stream().map(t -> String.valueOf(t.getId())).collect(Collectors.joining(", "));
-            throw new TaskIntersectionException("Add: Task \"" + task.getTitle()
-                                   + "\" has intersections with other tasks: " + toMsg);
-        }
+        checkIntersections(task);
         Task newTask = taskFactory.newTask(task);
         tasks.put(newTask.getId(), newTask);
         if (newTask.getStartTime() != null) sortedTasks.add(newTask);
@@ -98,12 +93,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Subtask add(Subtask subtask) throws TaskIntersectionException {
         if (subtask == null) return null;
-        List<Task> intersected = findIntersections(subtask);
-        if (!intersected.isEmpty()) {
-            String toMsg = intersected.stream().map(t -> String.valueOf(t.getId())).collect(Collectors.joining(", "));
-            throw new TaskIntersectionException("Add: Subtask \"" + subtask.getTitle()
-                    + "\" has intersections with other tasks: " + toMsg);
-        }
+        checkIntersections(subtask);
         Task eTask = tasks.get(subtask.getEpicId());
         if (eTask == null) return null;
         if (eTask instanceof Epic epic) {
@@ -120,12 +110,7 @@ public class InMemoryTaskManager implements TaskManager {
     public Task update(Task task) throws TaskIntersectionException {
         if (task == null)  return null;
         if (!tasks.containsKey(task.getId()))  return null;
-        List<Task> intersected = findIntersections(task);
-        if (!intersected.isEmpty()) {
-            String toMsg = intersected.stream().map(t -> String.valueOf(t.getId())).collect(Collectors.joining(", "));
-            throw new TaskIntersectionException("Update: Task \"" + task.getTitle()
-                    + "\" has intersections with other tasks: " + toMsg);
-        }
+        checkIntersections(task);
         Task foundTask = tasks.get(task.getId());
         if (foundTask instanceof Epic) {
             foundTask.update(task);
@@ -214,12 +199,16 @@ public class InMemoryTaskManager implements TaskManager {
 
     //#################################### Date Time methods ####################################
 
-    protected List<Task> findIntersections(Task task) {
-        if (task == null || task.getStartTime() == null) return List.of();
-        return sortedTasks.stream()
+    protected void checkIntersections(Task task) throws TaskIntersectionException {
+        if (task == null || task.getStartTime() == null) return;
+        List<Task> intersected = sortedTasks.stream()
                 .filter(t -> t.getStartTime().isBefore(task.getEndTime()) && task.getStartTime().isBefore(t.getEndTime()))
                 .filter(t -> !t.equals(task))
                 .toList();
+        if (intersected.isEmpty()) return;
+        String toMsg = intersected.stream().map(t -> String.valueOf(t.getId())).collect(Collectors.joining(", "));
+        throw new TaskIntersectionException("Task \"" + task.getTitle()
+                + "\" has intersections with other tasks: " + toMsg);
     }
 
 }
