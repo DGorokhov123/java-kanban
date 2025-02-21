@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
@@ -21,7 +23,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     }
 
     @Test
-    void readFromCSV() {
+    void readFromCSV() throws TaskNotFoundException {
         TaskManager tMan = FileBackedTaskManager.loadFromFile(new File("testfile.csv"));
         assertEquals("Task", tMan.getTaskById(1).getTitle());
         assertEquals("Epic", tMan.getTaskById(2).getTitle());
@@ -30,7 +32,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
     }
 
     @Test
-    void addUpdateRemove() throws IOException, TaskIntersectionException {
+    void addUpdateRemove() throws IOException, TaskNotFoundException, WrongTaskArgumentException, TaskIntersectionException {
         File file = File.createTempFile("tman", ".tmp");
 
         // ############################## ADD ##############################
@@ -92,15 +94,29 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
         tMan.removeById(5);
         tMan.removeById(4);
 
-        assertNull(tMan.getTaskById(4));
-        assertNull(tMan.getTaskById(5));
-        assertNull(tMan.getTaskById(6));
+        TaskManager finalTMan = tMan;
+        assertThrows(TaskNotFoundException.class, () -> {
+            finalTMan.getTaskById(4);
+        });
+        assertThrows(TaskNotFoundException.class, () -> {
+            finalTMan.getTaskById(5);
+        });
+        assertThrows(TaskNotFoundException.class, () -> {
+            finalTMan.getTaskById(6);
+        });
 
         tMan = FileBackedTaskManager.loadFromFile(file);
 
-        assertNull(tMan.getTaskById(4));
-        assertNull(tMan.getTaskById(5));
-        assertNull(tMan.getTaskById(6));
+        TaskManager final1TMan = tMan;
+        assertThrows(TaskNotFoundException.class, () -> {
+            final1TMan.getTaskById(4);
+        });
+        assertThrows(TaskNotFoundException.class, () -> {
+            final1TMan.getTaskById(5);
+        });
+        assertThrows(TaskNotFoundException.class, () -> {
+            final1TMan.getTaskById(6);
+        });
 
         // ############################## REMOVE ALL ##############################
 
@@ -108,35 +124,53 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
         assertEquals("t1", tMan.getTaskById(1).getTitle());
         assertEquals("e1", tMan.getTaskById(2).getTitle());
-        assertNull(tMan.getTaskById(3));
+        TaskManager final2TMan = tMan;
+        assertThrows(TaskNotFoundException.class, () -> {
+            final2TMan.getTaskById(3);
+        });
 
         tMan = FileBackedTaskManager.loadFromFile(file);
 
         assertEquals("t1", tMan.getTaskById(1).getTitle());
         assertEquals("e1", tMan.getTaskById(2).getTitle());
-        assertNull(tMan.getTaskById(3));
+        TaskManager final3TMan = tMan;
+        assertThrows(TaskNotFoundException.class, () -> {
+            final3TMan.getTaskById(3);
+        });
 
         tMan.removeAllEpics();
 
         assertEquals("t1", tMan.getTaskById(1).getTitle());
-        assertNull(tMan.getTaskById(2));
+        TaskManager final4TMan = tMan;
+        assertThrows(TaskNotFoundException.class, () -> {
+            final4TMan.getTaskById(2);
+        });
 
         tMan = FileBackedTaskManager.loadFromFile(file);
 
         assertEquals("t1", tMan.getTaskById(1).getTitle());
-        assertNull(tMan.getTaskById(2));
+        TaskManager final5TMan = tMan;
+        assertThrows(TaskNotFoundException.class, () -> {
+            final5TMan.getTaskById(2);
+        });
 
         tMan.removeAllTasks();
 
-        assertNull(tMan.getTaskById(1));
+        TaskManager final6TMan = tMan;
+        assertThrows(TaskNotFoundException.class, () -> {
+            final6TMan.getTaskById(1);
+        });
 
         tMan = FileBackedTaskManager.loadFromFile(file);      // empty file
 
-        assertNull(tMan.getTaskById(1));
+        TaskManager final7TMan = tMan;
+        assertThrows(TaskNotFoundException.class, () -> {
+            final7TMan.getTaskById(1);
+        });
     }
 
     @Test
-    void fileBackedMakeFile() throws TaskIntersectionException {
+    void fileBackedMakeFile() throws TaskIntersectionException, WrongTaskArgumentException, TaskNotFoundException {
         FileBackedTaskManager tm = new FileBackedTaskManager(new TaskFactory(), new InMemoryHistoryManager(10), new File("file1.csv"));
 
         tm.add(new Task(0, "Праздновать новый год", "всю ночь", TaskStatus.DONE, LocalDateTime.of(2024,12,31,21,0), Duration.ofHours(12)));
@@ -151,7 +185,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
         tm.add(new Subtask(0, e1.getId(), "сходить погулять", "с детьми", TaskStatus.NEW, LocalDateTime.of(2025, 1, 2, 15 ,0), Duration.ofHours(2)));
         tm.add(new Task(0, "Выпьем пивка", "под киношечку", TaskStatus.NEW, LocalDateTime.of(2025,1,2,19,0), Duration.ofHours(2)));
 
-        FileBackedTaskManager tm2 = Managers.loadFromFile(new TaskFactory(), new InMemoryHistoryManager(10), new File("file1.csv"));
+        FileBackedTaskManager tm2 = (FileBackedTaskManager) Managers.createNewFromFile(new TaskFactory(), new InMemoryHistoryManager(10), new File("file1.csv"));
         List<Task> tm1Tasks = tm.getAllRecords();
         List<Task> tm2Tasks = tm2.getAllRecords();
         for (int i = 0; i < tm1Tasks.size(); i++) {
