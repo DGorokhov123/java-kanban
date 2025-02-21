@@ -30,11 +30,17 @@ public interface TaskManager {
     List<Epic> getEpics();
 
     /**
+     * Returns a list of all subtasks (Subtask objects)
+     * @return {@code ArrayList<Subtask>} list of existing objects,
+     */
+    List<Subtask> getSubTasks();
+
+    /**
      * Returns a list of all subtasks (Subtask objects) of the specified epic.
      * @param epicId ID of the epic.
      * @return {@code ArrayList<Subtask>} list of existing objects,
      */
-    List<Subtask> getSubTasks(int epicId);
+    List<Subtask> getEpicSubtasks(int epicId);
 
     /**
      * Returns a list of all tasks and subtasks ordered by start time
@@ -105,4 +111,5 @@ public interface TaskManager {
      */
     void removeAllEpics();
 
+    void clearAllData();
 }

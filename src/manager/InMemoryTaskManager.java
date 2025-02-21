@@ -51,7 +51,15 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public List<Subtask> getSubTasks(int epicId) {
+    public List<Subtask> getSubTasks() {
+        return tasks.values().stream()
+                .filter(t -> (t instanceof Subtask))
+                .map(t -> (Subtask) t)
+                .toList();
+    }
+
+    @Override
+    public List<Subtask> getEpicSubtasks(int epicId) {
         return tasks.values().stream()
                 .filter(t -> (t instanceof Subtask))
                 .map(t -> (Subtask) t)
@@ -195,6 +203,14 @@ public class InMemoryTaskManager implements TaskManager {
                 .filter(t -> !(t instanceof Epic))
                 .filter(t -> t.getStartTime() != null)
                 .toList());
+    }
+
+    @Override
+    public void clearAllData() {
+        historyManager.clear();
+        sortedTasks.clear();
+        tasks.clear();
+        taskFactory.clear();
     }
 
     //#################################### Date Time methods ####################################
