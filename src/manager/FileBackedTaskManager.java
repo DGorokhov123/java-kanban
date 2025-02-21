@@ -1,6 +1,7 @@
 package manager;
 
 import task.*;
+
 import java.io.*;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
@@ -62,38 +63,51 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     @Override
-    public Task add(Task task) throws TaskIntersectionException {
+    public Task add(Task task) throws TaskIntersectionException, WrongTaskArgumentException {
         Task returnedTask = super.add(task);
         save();
         return returnedTask;
     }
 
     @Override
-    public Epic add(Epic epic) {
+    public Epic add(Epic epic) throws WrongTaskArgumentException {
         Epic returnedEpic = super.add(epic);
         save();
         return returnedEpic;
     }
 
     @Override
-    public Subtask add(Subtask subtask) throws TaskIntersectionException {
+    public Subtask add(Subtask subtask) throws TaskIntersectionException, TaskNotFoundException, WrongTaskArgumentException {
         Subtask returnedSubtask = super.add(subtask);
         save();
         return returnedSubtask;
     }
 
     @Override
-    public Task update(Task task) throws TaskIntersectionException {
-        Task updatedTask = super.update(task);
+    public Task update(Task task) throws TaskIntersectionException, TaskNotFoundException, WrongTaskArgumentException {
+        Task updated = super.update(task);
         save();
-        return updatedTask;
+        return updated;
     }
 
     @Override
-    public boolean removeById(int id) {
-        boolean removeResult = super.removeById(id);
+    public Epic update(Epic epic) throws TaskNotFoundException, WrongTaskArgumentException {
+        Epic updated = super.update(epic);
         save();
-        return removeResult;
+        return updated;
+    }
+
+    @Override
+    public Subtask update(Subtask subtask) throws TaskIntersectionException, TaskNotFoundException, WrongTaskArgumentException {
+        Subtask updated = super.update(subtask);
+        save();
+        return updated;
+    }
+
+    @Override
+    public void removeById(int id) throws TaskNotFoundException {
+        super.removeById(id);
+        save();
     }
 
     @Override
