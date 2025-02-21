@@ -63,7 +63,13 @@ public class Subtask extends Task {
         builder.append("\"").append(id).append("\",");
         builder.append("\"").append(TaskType.SUBTASK.toString()).append("\",");
         builder.append("\"").append(title).append("\",");
-        builder.append("\"").append(status.toString()).append("\",");
+        builder.append("\"");
+        if (status != null) {
+            builder.append(status.toString());
+        } else {
+            builder.append("NEW");
+        }
+        builder.append("\",");
         builder.append("\"").append(description).append("\",");
         builder.append("\"");
         if (startTime != null)  builder.append(startTime.format(DATE_TIME_FORMATTER));

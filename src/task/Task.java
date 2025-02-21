@@ -20,9 +20,9 @@ public class Task {
 
     public Task(int id, String title, String description, TaskStatus status, LocalDateTime startTime, Duration duration) {
         this.id = id;
-        this.title = title;
-        this.description = description;
-        this.status = status;
+        this.title = (title != null) ? title : "";
+        this.description = (description != null) ? description : "";
+        this.status = (status != null) ? status : TaskStatus.NEW;
         this.startTime = startTime;
         this.duration = duration;
     }
@@ -89,7 +89,13 @@ public class Task {
         builder.append("\"").append(id).append("\",");
         builder.append("\"").append(TaskType.TASK).append("\",");
         builder.append("\"").append(title).append("\",");
-        builder.append("\"").append(status.toString()).append("\",");
+        builder.append("\"");
+        if (status != null) {
+            builder.append(status.toString());
+        } else {
+            builder.append("NEW");
+        }
+        builder.append("\",");
         builder.append("\"").append(description).append("\",");
         builder.append("\"");
         if (startTime != null)  builder.append(startTime.format(DATE_TIME_FORMATTER));
