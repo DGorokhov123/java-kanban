@@ -1,5 +1,7 @@
 package task;
 
+import com.google.gson.annotations.Expose;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -8,8 +10,10 @@ import java.time.LocalDateTime;
  */
 public class Subtask extends Task {
 
-    private Epic epic;   // Epic task that this subtask belongs to
+    @Expose
     private final int epicId;  // Special field used for linking
+
+    private Epic epic;   // Epic task that this subtask belongs to
 
     public Subtask(int id, int epicId, String title, String description, TaskStatus status, LocalDateTime startTime, Duration duration) {
         super(id, title, description, status, startTime, duration);
