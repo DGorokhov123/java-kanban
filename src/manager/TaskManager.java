@@ -1,5 +1,11 @@
 package manager;
-import task.*;
+
+import exception.TaskIntersectionException;
+import exception.TaskNotFoundException;
+import exception.WrongTaskArgumentException;
+import task.Epic;
+import task.Subtask;
+import task.Task;
 
 import java.util.List;
 
@@ -15,7 +21,7 @@ public interface TaskManager {
      * @param id ID of existing Task object.
      * @return {@code Task} existing Task object, or {@code null} if it doesn't exist.
      */
-    Task getTaskById(int id);
+    Task getTaskById(int id) throws TaskNotFoundException;
 
     /**
      * Returns a list of all simple tasks (strictly Task objects, not Epic / Subtask).
@@ -30,11 +36,17 @@ public interface TaskManager {
     List<Epic> getEpics();
 
     /**
+     * Returns a list of all subtasks (Subtask objects)
+     * @return {@code ArrayList<Subtask>} list of existing objects,
+     */
+    List<Subtask> getSubTasks();
+
+    /**
      * Returns a list of all subtasks (Subtask objects) of the specified epic.
      * @param epicId ID of the epic.
      * @return {@code ArrayList<Subtask>} list of existing objects,
      */
-    List<Subtask> getSubTasks(int epicId);
+    List<Subtask> getEpicSubtasks(int epicId);
 
     /**
      * Returns a list of all tasks and subtasks ordered by start time
@@ -56,28 +68,42 @@ public interface TaskManager {
      * @param task Task data object to add to manager
      * @return {@code Task} new generated task, or {@code null} in case of wrong parameter
      */
-    Task add(Task task) throws TaskIntersectionException;
+    Task add(Task task) throws TaskIntersectionException, WrongTaskArgumentException;
 
     /**
      * Adds a new Epic
      * @param epic Epic data object to add to manager
      * @return {@code Epic} new generated epic, or {@code null} in case of wrong parameter
      */
-    Epic add(Epic epic);
+    Epic add(Epic epic) throws WrongTaskArgumentException;
 
     /**
      * Adds a new Subtask
      * @param subtask Subtask data object to add to manager
      * @return {@code Subtask} new generated subtask, or {@code null} in case of wrong parameter
      */
-    Subtask add(Subtask subtask) throws TaskIntersectionException;
+    Subtask add(Subtask subtask) throws TaskIntersectionException, WrongTaskArgumentException, TaskNotFoundException;
 
     /**
-     * Updates an existing Task (or its child Epic / Subtask).
-     * @param task New instance of extended Task type object, containing new data for existing entry.
+     * Updates an existing Task
+     * @param task New instance of Task object, containing new data for existing entry.
      * @return {@code Task} updated object, or {@code null} in case of wrong ID
      */
-    Task update(Task task) throws TaskIntersectionException;
+    Task update(Task task) throws TaskIntersectionException, WrongTaskArgumentException, TaskNotFoundException;
+
+    /**
+     * Updates an existing Epic
+     * @param epic New instance of Epic object, containing new data for existing entry.
+     * @return {@code Epic} updated object, or {@code null} in case of wrong ID
+     */
+    Epic update(Epic epic) throws WrongTaskArgumentException, TaskNotFoundException;
+
+    /**
+     * Updates an existing Subtask
+     * @param subtask New instance of Subtask object, containing new data for existing entry.
+     * @return {@code Subtask} updated object, or {@code null} in case of wrong ID
+     */
+    Subtask update(Subtask subtask) throws TaskIntersectionException, WrongTaskArgumentException, TaskNotFoundException;
 
 
     //#################################### Remove methods. ####################################
@@ -86,9 +112,8 @@ public interface TaskManager {
      * Removes an existing Task (or its child Epic / Subtask).
      *
      * @param id ID of existing extended Task type object to remove.
-     * @return {@code true} task is removed, {@code false} task is not found
      */
-    boolean removeById(int id);
+    void removeById(int id) throws TaskNotFoundException;
 
     /**
      * Removes all simple tasks (strictly Task objects, not Epic / Subtask).
@@ -105,4 +130,5 @@ public interface TaskManager {
      */
     void removeAllEpics();
 
+    void clearAllData();
 }

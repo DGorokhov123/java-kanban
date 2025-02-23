@@ -1,4 +1,4 @@
-package manager;
+package exception;
 
 public class TaskIntersectionException extends Exception {
 

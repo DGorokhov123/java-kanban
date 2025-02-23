@@ -1,4 +1,4 @@
-package task;
+package exception;
 
 public class WrongCSVLineException extends Exception {
 

@@ -1,4 +1,6 @@
 package task;
+import com.google.gson.annotations.Expose;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,20 +11,28 @@ import java.util.Objects;
  */
 public class Task {
 
+    @Expose
+    protected final String type = getClass().getSimpleName();
+    @Expose
     protected final int id;
+    @Expose
     protected String title;
+    @Expose
     protected String description;
+    @Expose
     protected TaskStatus status;
+    @Expose
     protected LocalDateTime startTime;
+    @Expose
     protected Duration duration;
 
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     public Task(int id, String title, String description, TaskStatus status, LocalDateTime startTime, Duration duration) {
         this.id = id;
-        this.title = title;
-        this.description = description;
-        this.status = status;
+        this.title = (title != null) ? title : "";
+        this.description = (description != null) ? description : "";
+        this.status = (status != null) ? status : TaskStatus.NEW;
         this.startTime = startTime;
         this.duration = duration;
     }
@@ -89,7 +99,13 @@ public class Task {
         builder.append("\"").append(id).append("\",");
         builder.append("\"").append(TaskType.TASK).append("\",");
         builder.append("\"").append(title).append("\",");
-        builder.append("\"").append(status.toString()).append("\",");
+        builder.append("\"");
+        if (status != null) {
+            builder.append(status.toString());
+        } else {
+            builder.append("NEW");
+        }
+        builder.append("\",");
         builder.append("\"").append(description).append("\",");
         builder.append("\"");
         if (startTime != null)  builder.append(startTime.format(DATE_TIME_FORMATTER));

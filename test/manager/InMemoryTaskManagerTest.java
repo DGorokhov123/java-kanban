@@ -1,5 +1,8 @@
 package manager;
 
+import exception.TaskIntersectionException;
+import exception.TaskNotFoundException;
+import exception.WrongTaskArgumentException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import task.*;
@@ -8,6 +11,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
@@ -25,24 +29,24 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     }
 
     @Test
-    void continuousHistoryOps() {
+    void continuousHistoryOps() throws TaskNotFoundException, WrongTaskArgumentException, TaskIntersectionException {
         TaskManager tm = new InMemoryTaskManager(new TaskFactory(), new InMemoryHistoryManager(10));
         Random rnd = new Random();
         int choice = 0;
         int lastID = 0;
         int lastEpicID = 0;
-        try {
-            for (int i = 0; i < 1000; i++) {
-                choice = rnd.nextInt(8);
-                if (choice == 0) {
-                    lastID = tm.add(new Task(0, "t", "", TaskStatus.NEW, null, null)).getId();
-                } else if (choice == 1) {
-                    lastID = tm.add(new Epic(0, "e", "")).getId();
-                    lastEpicID = lastID;
-                } else if (choice <= 3 && lastEpicID > 0) {
-                    lastID = tm.add(new Subtask(0, lastEpicID, "s", "", TaskStatus.NEW, null, null)).getId();
-                } else if (choice <= 5 && lastID > 0) {
-                    int rndRes = rnd.nextInt(lastID);
+        for (int i = 0; i < 1000; i++) {
+            choice = rnd.nextInt(8);
+            if (choice == 0) {
+                lastID = tm.add(new Task(0, "t", "", TaskStatus.NEW, null, null)).getId();
+            } else if (choice == 1) {
+                lastID = tm.add(new Epic(0, "e", "")).getId();
+                lastEpicID = lastID;
+            } else if (choice <= 3 && lastEpicID > 0) {
+                lastID = tm.add(new Subtask(0, lastEpicID, "s", "", TaskStatus.NEW, null, null)).getId();
+            } else if (choice <= 5 && lastID > 0) {
+                int rndRes = rnd.nextInt(lastID);
+                try {
                     Task tsk = tm.getTaskById(rndRes);
                     if (tsk instanceof Epic) {
                         tm.update(new Epic(rndRes, "Epic", String.valueOf(i)));
@@ -51,13 +55,19 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
                     } else {
                         tm.update(new Task(rndRes, "Task", String.valueOf(i), TaskStatus.DONE, null, null));
                     }
-                } else {
-                    int rndRes = rnd.nextInt(lastID + 1);
-                    if (rndRes != lastEpicID) tm.removeById(rndRes);
+                } catch (TaskNotFoundException | WrongTaskArgumentException | TaskIntersectionException e) {
+                    //nothing
+                }
+            } else {
+                int rndRes = rnd.nextInt(lastID + 1);
+                if (rndRes != lastEpicID) {
+                    try {
+                        tm.removeById(rndRes);
+                    } catch (TaskNotFoundException e) {
+                        //nothing
+                    }
                 }
             }
-        } catch (TaskIntersectionException e) {
-            assertNull(e);
         }
         System.out.println("======================== Корректность истории ========================");
         int historyCounter = 1;
@@ -73,7 +83,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     }
 
     @Test
-    void user_behaviour_simulation() throws TaskIntersectionException {
+    void user_behaviour_simulation() throws TaskNotFoundException, WrongTaskArgumentException, TaskIntersectionException {
         TaskManager tm = new InMemoryTaskManager(new TaskFactory(), new InMemoryHistoryManager(10));
         // Simple task #1
         tm.add(new Task(0, "Купить биткойн", "по сто рублей", TaskStatus.DONE, null, null));
@@ -89,7 +99,10 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         Task t3 = tm.add(new Task(0, "Удаление таска", "это должно быть удалено", TaskStatus.NEW, null, null));
         assertEquals("Удаление таска", tm.getTaskById(3).getTitle());
         tm.removeById(t3.getId());
-        assertNull(tm.getTaskById(3));
+
+        assertThrows(TaskNotFoundException.class, () -> {
+            tm.getTaskById(3);
+        });
 
         // Epic #1
         Epic e1 = tm.add(new Epic(0, "Наладить жизнь в России", ""));
@@ -111,8 +124,13 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         tm.add(new Subtask(0, e2.getId(), "а также", "всех его сабтасков", TaskStatus.NEW, null, null));
         assertEquals("а также", tm.getTaskById(9).getTitle());
         tm.removeById(e2.getId());
-        assertNull(tm.getTaskById(8));
-        assertNull(tm.getTaskById(9));
+
+        assertThrows(TaskNotFoundException.class, () -> {
+            tm.getTaskById(8);
+        });
+        assertThrows(TaskNotFoundException.class, () -> {
+            tm.getTaskById(9);
+        });
 
         // Epic #3 - add + update + delete subtask
         Epic e3 = tm.add(new Epic(0, "Название эпика надо изменить", ""));
@@ -138,7 +156,11 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         tm.update(new Subtask(e3s3.getId(), 0, "Стать мидлом", "найти работу за хорошие деньги", TaskStatus.NEW, null, null));
         assertEquals("Стать мидлом", tm.getTaskById(13).getTitle());
         tm.removeById(e3s4.getId());
-        assertNull(tm.getTaskById(14));
+
+        assertThrows(TaskNotFoundException.class, () -> {
+            tm.getTaskById(14);
+        });
+
         tm.update(new Subtask(e3s5.getId(), 0, "Стать сеньором", "и уехать в долину", TaskStatus.NEW, null, null));
         assertEquals("Стать сеньором", tm.getTaskById(15).getTitle());
 
@@ -146,21 +168,38 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         tm.getTasks().forEach(System.out::println);
         tm.getEpics().stream()
                 .peek(System.out::println)
-                .forEach(e -> { tm.getSubTasks(e.getId()).forEach(s -> {
+                .forEach(e -> { tm.getEpicSubtasks(e.getId()).forEach(s -> {
                     System.out.println("\t" + s.toString());
                 }); });
 
         // non-existent tasks
-        assertTrue(tm.getSubTasks(444).isEmpty());
-        assertNull(tm.getTaskById(4568));
-        assertNull(tm.getTaskById(8745));
-        assertNull(tm.getTaskById(9852));
+        assertTrue(tm.getEpicSubtasks(444).isEmpty());
+        assertThrows(TaskNotFoundException.class, () -> {
+            tm.getTaskById(4568);
+        });
+        assertThrows(TaskNotFoundException.class, () -> {
+            tm.getTaskById(8745);
+        });
+        assertThrows(TaskNotFoundException.class, () -> {
+            tm.getTaskById(9852);
+        });
 
         // history
-        for (int i = 0; i < 20; i++) tm.getTaskById(i);
-        tm.getTaskById(6); tm.getTaskById(6);
+        for (int i = 0; i < 20; i++) {
+            try {
+                tm.getTaskById(i);
+            } catch (TaskNotFoundException e) {
+                //nothing
+            }
+        }
+        tm.getTaskById(6);
+        tm.getTaskById(6);
         tm.getTaskById(5);
-        tm.getTaskById(6); tm.getTaskById(6); tm.getTaskById(6); tm.getTaskById(6); tm.getTaskById(6);
+        tm.getTaskById(6);
+        tm.getTaskById(6);
+        tm.getTaskById(6);
+        tm.getTaskById(6);
+        tm.getTaskById(6);
         tm.getTaskById(7);
         List<Task> th = tm.getHistory();
         assertEquals(7, th.get(9).getId());
@@ -178,7 +217,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         assertTrue(tm.getHistory().stream().noneMatch(t -> !(t instanceof Epic) && !(t instanceof Subtask)));
 
         tm.removeAllSubtasks();
-        tm.getEpics().forEach(e -> { assertTrue(tm.getSubTasks(e.getId()).isEmpty()); });
+        tm.getEpics().forEach(e -> { assertTrue(tm.getEpicSubtasks(e.getId()).isEmpty()); });
         assertTrue(tm.getHistory().stream().noneMatch(s -> (s instanceof Subtask)));
 
         tm.removeAllEpics();
@@ -187,17 +226,13 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
     }
 
     @Test
-    void taskIntersections() {
-        try {
-            Task newtask = new Task(0, "new", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 1, 1), Duration.ofHours(5));
-            Task task1 = taskManager.add(new Task(0, "1", "", TaskStatus.NEW, LocalDateTime.of(2000, 5, 5, 1, 1), Duration.ofHours(5)));
-            assertDoesNotThrow(() -> {taskManager.checkIntersections(newtask);});
-            Task task2 = taskManager.add(new Task(0, "2", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 3, 21), Duration.ofHours(5)));
-            assertThrows(TaskIntersectionException.class, () -> {taskManager.checkIntersections(newtask);});
-            assertDoesNotThrow(() -> {taskManager.checkIntersections(task1);});
-        } catch (TaskIntersectionException e) {
-            assertNull(e);
-        }
+    void taskIntersections() throws WrongTaskArgumentException, TaskIntersectionException {
+        Task newtask = new Task(0, "new", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 1, 1), Duration.ofHours(5));
+        Task task1 = taskManager.add(new Task(0, "1", "", TaskStatus.NEW, LocalDateTime.of(2000, 5, 5, 1, 1), Duration.ofHours(5)));
+        assertDoesNotThrow(() -> {taskManager.checkIntersections(newtask);});
+        Task task2 = taskManager.add(new Task(0, "2", "", TaskStatus.NEW, LocalDateTime.of(2000, 1, 1, 3, 21), Duration.ofHours(5)));
+        assertThrows(TaskIntersectionException.class, () -> {taskManager.checkIntersections(newtask);});
+        assertDoesNotThrow(() -> {taskManager.checkIntersections(task1);});
     }
 
 }

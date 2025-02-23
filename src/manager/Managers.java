@@ -6,6 +6,8 @@ import java.io.File;
 
 public class Managers {
 
+    private static TaskManager instance;
+
     //#################################### InMemory Task Manager ####################################
 
     /**
@@ -14,36 +16,42 @@ public class Managers {
      * @param historyManager instance of HistoryManager object to inject
      * @return {@code TaskManager} created object
      */
-    public static InMemoryTaskManager getDefault(TaskFactory taskFactory, HistoryManager historyManager) {
-        if (taskFactory == null) taskFactory = getDefaultFactory();
-        if (historyManager == null) historyManager = getDefaultHistory();
-        return new InMemoryTaskManager(taskFactory, historyManager);
+    public static TaskManager createNewInMemory(TaskFactory taskFactory, HistoryManager historyManager) {
+        if (taskFactory == null) throw new IllegalArgumentException("Parameter 'taskFactory' cannot be null");
+        if (historyManager == null) throw new IllegalArgumentException("Parameter 'historyManager' cannot be null");
+        instance = new InMemoryTaskManager(taskFactory, historyManager);
+        return instance;
     }
 
     /**
-     * Returns a new default task manager with auto generated dependencies.
-     * @return {@code TaskManager} created object
+     * Returns an existing instance of task manager or creates new with auto generated dependencies.
+     * @return {@code TaskManager} TaskManager instance
      */
-    public static InMemoryTaskManager getDefault() {
-        return getDefault(null, null);
+    public static TaskManager getDefault() {
+        if (instance == null) {
+            createNewInMemory(getDefaultFactory(), getDefaultHistory());
+        }
+        return instance;
     }
 
 
     //#################################### File Backed Task Manager ####################################
 
     /**
-     * Returns a new File Backed task manager. Full constructor.
+     * Returns a new File Backed task manager and loads info from file.
      * @param taskFactory instance of TaskFactory object to inject
      * @param historyManager instance of HistoryManager object to inject
      * @param file CSV file to read
      * @return {@code TaskManager} created object
      */
-    public static FileBackedTaskManager loadFromFile(TaskFactory taskFactory, HistoryManager historyManager, File file) {
-        if (taskFactory == null) taskFactory = getDefaultFactory();
-        if (historyManager == null) historyManager = getDefaultHistory();
+    public static TaskManager createNewFromFile(TaskFactory taskFactory, HistoryManager historyManager, File file) {
+        if (taskFactory == null) throw new IllegalArgumentException("Parameter 'taskFactory' cannot be null");
+        if (historyManager == null) throw new IllegalArgumentException("Parameter 'historyManager' cannot be null");
+        if (file == null) throw new IllegalArgumentException("Parameter 'file' cannot be null");
         FileBackedTaskManager taskManager = new FileBackedTaskManager(taskFactory, historyManager, file);
         if (file.canRead())  taskManager.readFromCSV();
-        return taskManager;
+        instance = taskManager;
+        return instance;
     }
 
     /**
@@ -51,8 +59,10 @@ public class Managers {
      * @param file CSV file to read
      * @return {@code TaskManager} created object
      */
-    public static FileBackedTaskManager loadFromFile(File file) {
-        return loadFromFile(null, null, file);
+    public static TaskManager createNewFromFile(File file) {
+        if (file == null) throw new IllegalArgumentException("Parameter 'file' cannot be null");
+        createNewFromFile(getDefaultFactory(), getDefaultHistory(), file);
+        return instance;
     }
 
 
@@ -63,7 +73,7 @@ public class Managers {
      * @return {@code HistoryManager} created object
      */
     public static InMemoryHistoryManager getDefaultHistory() {
-        return new InMemoryHistoryManager();
+        return new InMemoryHistoryManager(10);
     }
 
     /**
