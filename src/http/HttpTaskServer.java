@@ -3,9 +3,11 @@ package http;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpServer;
+import exception.TaskNotFoundException;
+import http.deserialiazer.*;
+import http.handler.*;
 import manager.Managers;
 import manager.TaskManager;
-import manager.TaskNotFoundException;
 import task.Epic;
 import task.Subtask;
 import task.Task;
@@ -54,6 +56,7 @@ public class HttpTaskServer {
         try {
             taskServer.start();
         } catch (IOException e) {
+            taskServer.stop();
             System.out.println("Network error: " + e.getMessage());
         }
     }

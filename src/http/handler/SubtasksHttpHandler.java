@@ -1,13 +1,14 @@
-package http;
+package http.handler;
 
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import exception.TaskIntersectionException;
+import exception.TaskNotFoundException;
+import exception.WrongTaskArgumentException;
+import http.HttpTaskServer;
 import manager.Managers;
-import manager.TaskIntersectionException;
-import manager.TaskNotFoundException;
-import manager.WrongTaskArgumentException;
 import task.Subtask;
 
 import java.io.IOException;
@@ -83,7 +84,7 @@ public class SubtasksHttpHandler extends BaseHttpHandler implements HttpHandler 
         try {
             Subtask subtask = (Subtask) Managers.getDefault().getTaskById(taskId);
             Managers.getDefault().removeById(subtask.getId());
-            send200(exchange);
+            sendOK(exchange);
         } catch (ClassCastException e) {
             sendNotFound(exchange, "Delete error: Object is not an instance of Subtask.class");
         } catch (TaskNotFoundException e) {
@@ -98,7 +99,7 @@ public class SubtasksHttpHandler extends BaseHttpHandler implements HttpHandler 
             if (newSubtask == null) throw new WrongTaskArgumentException();
             if (newSubtask.getId() != taskId) throw new IllegalArgumentException();
             Managers.getDefault().update(newSubtask);
-            send201(exchange);
+            sendNoContent(exchange);
         } catch (JsonSyntaxException e) {
             sendBadRequest(exchange, "Update error: body should contain a correct JSON Object of Subtask.class");
         } catch (ClassCastException e) {
@@ -110,7 +111,7 @@ public class SubtasksHttpHandler extends BaseHttpHandler implements HttpHandler 
         } catch (WrongTaskArgumentException e) {
             sendBadRequest(exchange, "Update error: Empty or wrong body");
         } catch (TaskIntersectionException e) {
-            sendHasInteractions(exchange, "Subtask has intersections with existing tasks");
+            sendConflict(exchange, "Subtask has intersections with existing tasks");
         }
     }
 
@@ -118,7 +119,7 @@ public class SubtasksHttpHandler extends BaseHttpHandler implements HttpHandler 
         try {
             Subtask newSubtask = HttpTaskServer.getGson().fromJson(body, Subtask.class);
             Managers.getDefault().add(newSubtask);
-            send201(exchange);
+            sendNoContent(exchange);
         } catch (JsonSyntaxException e) {
             sendBadRequest(exchange, "Create error: body should contain a correct JSON Object of Subtask.class");
         } catch (WrongTaskArgumentException e) {
@@ -126,7 +127,7 @@ public class SubtasksHttpHandler extends BaseHttpHandler implements HttpHandler 
         } catch (TaskNotFoundException e) {
             sendNotFound(exchange, "Create error: Subtask's Epic not found");
         } catch (TaskIntersectionException e) {
-            sendHasInteractions(exchange, "Subtask has intersections with existing tasks");
+            sendConflict(exchange, "Subtask has intersections with existing tasks");
         }
     }
 

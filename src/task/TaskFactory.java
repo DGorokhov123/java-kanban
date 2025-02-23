@@ -1,5 +1,7 @@
 package task;
 
+import exception.WrongCSVLineException;
+
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDateTime;

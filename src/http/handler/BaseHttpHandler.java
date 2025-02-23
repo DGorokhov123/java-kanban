@@ -1,4 +1,4 @@
-package http;
+package http.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -7,12 +7,12 @@ import java.nio.charset.StandardCharsets;
 
 public abstract class BaseHttpHandler {
 
-    protected void send200(HttpExchange exchange) throws IOException {
+    protected void sendOK(HttpExchange exchange) throws IOException {
         exchange.sendResponseHeaders(200, -1);
         exchange.close();
     }
 
-    protected void send201(HttpExchange exchange) throws IOException {
+    protected void sendNoContent(HttpExchange exchange) throws IOException {
         exchange.sendResponseHeaders(201, -1);
         exchange.close();
     }
@@ -21,7 +21,7 @@ public abstract class BaseHttpHandler {
         sendText(exchange, text, 404);
     }
 
-    protected void sendHasInteractions(HttpExchange exchange, String text) throws IOException {
+    protected void sendConflict(HttpExchange exchange, String text) throws IOException {
         sendText(exchange, text, 406);
     }
 

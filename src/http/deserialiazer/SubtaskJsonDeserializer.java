@@ -1,6 +1,7 @@
-package http;
+package http.deserialiazer;
 
 import com.google.gson.*;
+import http.HttpTaskServer;
 import task.Subtask;
 
 import java.lang.reflect.Type;

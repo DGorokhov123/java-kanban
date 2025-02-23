@@ -1,13 +1,14 @@
-package http;
+package http.handler;
 
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import exception.TaskIntersectionException;
+import exception.TaskNotFoundException;
+import exception.WrongTaskArgumentException;
+import http.HttpTaskServer;
 import manager.Managers;
-import manager.TaskIntersectionException;
-import manager.TaskNotFoundException;
-import manager.WrongTaskArgumentException;
 import task.Epic;
 import task.Subtask;
 import task.Task;
@@ -87,7 +88,7 @@ public class TasksHttpHandler extends BaseHttpHandler implements HttpHandler {
             Task task = Managers.getDefault().getTaskById(taskId);
             if ((task instanceof Epic) || (task instanceof Subtask)) throw new ClassCastException();
             Managers.getDefault().removeById(task.getId());
-            send200(exchange);
+            sendOK(exchange);
         } catch (ClassCastException e) {
             sendNotFound(exchange, "Delete error: Object is not an instance of Task.class");
         } catch (TaskNotFoundException e) {
@@ -102,7 +103,7 @@ public class TasksHttpHandler extends BaseHttpHandler implements HttpHandler {
             if (newTask == null) throw new WrongTaskArgumentException();
             if (newTask.getId() != taskId) throw new IllegalArgumentException();
             Managers.getDefault().update(newTask);
-            send201(exchange);
+            sendNoContent(exchange);
         } catch (JsonSyntaxException e) {
             sendBadRequest(exchange, "Update error: body should contain a correct JSON Object of Task.class");
         } catch (ClassCastException e) {
@@ -114,7 +115,7 @@ public class TasksHttpHandler extends BaseHttpHandler implements HttpHandler {
         } catch (WrongTaskArgumentException e) {
             sendBadRequest(exchange, "Update error: Empty or wrong body");
         } catch (TaskIntersectionException e) {
-            sendHasInteractions(exchange, "Task has intersections with existing tasks");
+            sendConflict(exchange, "Task has intersections with existing tasks");
         }
     }
 
@@ -123,13 +124,13 @@ public class TasksHttpHandler extends BaseHttpHandler implements HttpHandler {
             Task newTask = HttpTaskServer.getGson().fromJson(body, Task.class);
             if (newTask instanceof Epic || newTask instanceof Subtask) throw new JsonSyntaxException("");
             Managers.getDefault().add(newTask);
-            send201(exchange);
+            sendNoContent(exchange);
         } catch (JsonSyntaxException e) {
             sendBadRequest(exchange, "Create error: body should contain a correct JSON Object of Task.class");
         } catch (WrongTaskArgumentException e) {
             sendBadRequest(exchange, "Create error: Empty or wrong body");
         } catch (TaskIntersectionException e) {
-            sendHasInteractions(exchange, "Task has intersections with existing tasks");
+            sendConflict(exchange, "Task has intersections with existing tasks");
         }
     }
 

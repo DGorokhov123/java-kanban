@@ -1,5 +1,8 @@
 package manager;
 
+import exception.TaskIntersectionException;
+import exception.TaskNotFoundException;
+import exception.WrongTaskArgumentException;
 import task.Epic;
 import task.Subtask;
 import task.Task;

@@ -1,8 +1,9 @@
-package http;
+package http.handler;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import http.HttpTaskServer;
 import manager.Managers;
 import task.Task;
 

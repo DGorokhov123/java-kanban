@@ -1,5 +1,8 @@
 package manager;
 
+import exception.TaskIntersectionException;
+import exception.TaskNotFoundException;
+import exception.WrongTaskArgumentException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import task.Task;

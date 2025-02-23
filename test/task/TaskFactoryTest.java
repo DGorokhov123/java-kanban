@@ -1,5 +1,6 @@
 package task;
 
+import exception.WrongCSVLineException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package http;
+package http.deserialiazer;
 
 import com.google.gson.reflect.TypeToken;
 import task.Epic;

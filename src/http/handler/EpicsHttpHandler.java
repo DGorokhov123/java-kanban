@@ -1,12 +1,13 @@
-package http;
+package http.handler;
 
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import exception.TaskNotFoundException;
+import exception.WrongTaskArgumentException;
+import http.HttpTaskServer;
 import manager.Managers;
-import manager.TaskNotFoundException;
-import manager.WrongTaskArgumentException;
 import task.Epic;
 import task.Subtask;
 
@@ -95,7 +96,7 @@ public class EpicsHttpHandler extends BaseHttpHandler implements HttpHandler {
         try {
             Epic epic = (Epic) Managers.getDefault().getTaskById(taskId);
             Managers.getDefault().removeById(epic.getId());
-            send200(exchange);
+            sendOK(exchange);
         } catch (ClassCastException e) {
             sendNotFound(exchange, "Delete error: Object is not an instance of Epic.class");
         } catch (TaskNotFoundException e) {
@@ -110,7 +111,7 @@ public class EpicsHttpHandler extends BaseHttpHandler implements HttpHandler {
             if (newEpic == null) throw new WrongTaskArgumentException();
             if (newEpic.getId() != taskId) throw new IllegalArgumentException();
             Managers.getDefault().update(newEpic);
-            send201(exchange);
+            sendNoContent(exchange);
         } catch (JsonSyntaxException e) {
             sendBadRequest(exchange, "Update error: body should contain a correct JSON Object of Epic.class");
         } catch (ClassCastException e) {
@@ -128,7 +129,7 @@ public class EpicsHttpHandler extends BaseHttpHandler implements HttpHandler {
         try {
             Epic newEpic = HttpTaskServer.getGson().fromJson(body, Epic.class);
             Managers.getDefault().add(newEpic);
-            send201(exchange);
+            sendNoContent(exchange);
         } catch (JsonSyntaxException e) {
             sendBadRequest(exchange, "Create error: body should contain a correct JSON Object of Epic.class");
         } catch (WrongTaskArgumentException e) {
